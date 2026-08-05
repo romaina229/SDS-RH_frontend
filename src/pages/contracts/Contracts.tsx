@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
@@ -6,7 +7,24 @@ import { useAuth } from '../../context/AuthContext';
 import { type Contract } from '../../types';
 import toast from 'react-hot-toast';
 import axios from '../../api/axios';
-import { TrashIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, PencilSquareIcon, PlusIcon } from '@heroicons/react/24/outline';
+
+interface ListParams {
+    [key: string]: any;
+}
+
+interface ContractData {
+    [key: string]: any;
+}
+
+export const contracts = {
+    list: (params?: ListParams) => axios.get('/contracts', { params }),
+    create: (data: ContractData) => axios.post('/contracts', data),
+    show: (id: string | number) => axios.get(`/contracts/${id}`),
+    update: (id: string | number, data: ContractData) => axios.put(`/contracts/${id}`, data),
+    delete: (id: string | number) => axios.delete(`/contracts/${id}`),
+    stats: () => axios.get('/contracts/stats'),
+};
 
 const Contracts: React.FC = () => {
     const { hasPermission } = useAuth();
@@ -105,6 +123,15 @@ const Contracts: React.FC = () => {
                         <h1 className="text-2xl font-bold text-gray-900">Contrats</h1>
                         <p className="text-gray-500 mt-1">Gestion des contrats des employés</p>
                     </div>
+                    {hasPermission('create_contracts') && (
+                        <Link
+                            to="/contracts/create"
+                            className="mt-4 sm:mt-0 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
+                        >
+                            <PlusIcon className="h-5 w-5" />
+                            Nouveau contrat
+                        </Link>
+                    )}
                 </div>
 
                 {/* Filtres */}
@@ -210,15 +237,26 @@ const Contracts: React.FC = () => {
                                             )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            {hasPermission('delete_contracts') && (
-                                                <button
-                                                    onClick={() => handleDelete(contract.id)}
-                                                    className="text-danger-600 hover:text-danger-900"
-                                                    title="Terminer le contrat"
-                                                >
-                                                    <TrashIcon className="h-5 w-5" />
-                                                </button>
-                                            )}
+                                            <div className="flex items-center justify-end gap-3">
+                                                {hasPermission('edit_contracts') && (
+                                                    <Link
+                                                        to={`/contracts/${contract.id}/edit`}
+                                                        className="text-primary-600 hover:text-primary-900"
+                                                        title="Modifier le contrat"
+                                                    >
+                                                        <PencilSquareIcon className="h-5 w-5" />
+                                                    </Link>
+                                                )}
+                                                {hasPermission('delete_contracts') && (
+                                                    <button
+                                                        onClick={() => handleDelete(contract.id)}
+                                                        className="text-danger-600 hover:text-danger-900"
+                                                        title="Terminer le contrat"
+                                                    >
+                                                        <TrashIcon className="h-5 w-5" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

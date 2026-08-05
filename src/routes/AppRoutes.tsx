@@ -10,6 +10,8 @@ import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 
 // Pages principales
+import AdminDashboard from '../pages/admin/admindashboard';
+import Performance from '../pages/performance/Performance';
 import Dashboard from '../pages/dashboard/Dashboard';
 import Employees from '../pages/employees/Employees';
 import EmployeeCreate from '../pages/employees/EmployeeCreate';
@@ -17,6 +19,8 @@ import EmployeeEdit from '../pages/employees/EmployeeEdit';
 import EmployeeShow from '../pages/employees/EmployeeShow';
 import Departments from '../pages/departments/Departments';
 import Contracts from '../pages/contracts/Contracts';
+import ContractCreate from '../pages/contracts/ContractCreat';
+import ContractEdit from '../pages/contracts/ContractEdit';
 import Leaves from '../pages/leaves/Leaves';
 import LeaveCreate from '../pages/leaves/LeaveCreate';
 import Attendance from '../pages/attendance/Attendance';
@@ -43,6 +47,7 @@ const AppRoutes = () => {
                     {/* Routes protégées */}
                     <Route element={<PrivateRoute />}>
                         <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/admin" element={<AdminDashboard />} />
 
                         {/* Employés */}
                         <Route path="/employees" element={<Employees />} />
@@ -55,6 +60,8 @@ const AppRoutes = () => {
 
                         {/* Contrats */}
                         <Route path="/contracts" element={<Contracts />} />
+                        <Route path="/contracts/create" element={<ContractCreate />} />
+                        <Route path="/contracts/:id/edit" element={<ContractEdit />} />
 
                         {/* Congés */}
                         <Route path="/leaves" element={<Leaves />} />
@@ -75,6 +82,9 @@ const AppRoutes = () => {
 
                         {/* Formations */}
                         <Route path="/trainings" element={<Trainings />} />
+
+                        {/* Performance */}
+                        <Route path="/performance" element={<Performance />} />
 
                         {/* Rapports */}
                         <Route path="/reports" element={<Reports />} />
