@@ -181,7 +181,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <h1 className="text-2xl md:text-3xl font-bold mt-2">Administration de la plateforme</h1>
                     <p className="text-primary-100 mt-1">
-                        Vue globale sur toutes les organisations, tous clients confondus.
+                        Vue globale sur toutes les organisations, tous clients confondus de SDS-RH.
                     </p>
                 </div>
 

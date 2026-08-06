@@ -45,11 +45,17 @@ const Departments: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         try {
+            const payload = {
+                ...formData,
+                manager_id: formData.manager_id || null,
+                parent_department_id: formData.parent_department_id || null,
+            };
+
             if (editing) {
-                await axios.put(`/departments/${editing.id}`, formData);
+                await axios.put(`/departments/${editing.id}`, payload);
                 toast.success('Département mis à jour avec succès');
             } else {
-                await axios.post('/departments', formData);
+                await axios.post('/departments', payload);
                 toast.success('Département créé avec succès');
             }
             resetForm();

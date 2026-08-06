@@ -93,7 +93,20 @@ const EmployeeCreate: React.FC = () => {
         setSaving(true);
 
         try {
-            await employees.create(data);
+            // Idem Departments.tsx : les <select> laissés vides renvoient ""
+            // et non null, ce qui fait échouer la règle "nullable|exists"
+            // côté backend (422) dès que le département/poste/genre/statut
+            // marital n'est pas renseigné.
+            const payload = {
+                ...data,
+                department_id: data.department_id || null,
+                position_id: data.position_id || null,
+                gender: data.gender || null,
+                marital_status: data.marital_status || null,
+                birth_date: data.birth_date || null,
+            };
+
+            await employees.create(payload);
             toast.success('Employé créé avec succès. Un lien de définition du mot de passe sera envoyé par email.');
             navigate('/employees');
         } catch (error: any) {
