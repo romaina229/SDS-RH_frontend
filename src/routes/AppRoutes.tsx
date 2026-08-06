@@ -5,6 +5,8 @@ import PrivateRoute from './PrivateRoute';
 
 // Page publique
 import Home from '../pages/marketing/Home';
+import ConditionsDUtilisation from '../pages/confidentielle/CondictionsDUtilisation';
+import PolitiqueDeConfidentialite from '../pages/confidentielle/PolitiqueDeConfidentialite';
 
 // Pages d'authentification
 import Login from '../pages/auth/Login';
@@ -47,6 +49,8 @@ const AppRoutes = () => {
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/" element={<Home />} />
+                    <Route path="/confidentielle/politique-de-confidentialite" element={<PolitiqueDeConfidentialite />} />
+                    <Route path="/confidentielle/conditions-d-utilisation" element={<ConditionsDUtilisation />} />
 
                     {/* Routes protégées */}
                     <Route element={<PrivateRoute />}>

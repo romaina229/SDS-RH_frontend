@@ -21,13 +21,22 @@ interface AuthContextType {
 }
 
 interface RegisterData {
-    tenant_name: string;
-    first_name: string;
-    last_name: string;
+    organization_name: string;
+    organization_type: string;
+    country: 'XOF' | 'EUR' | 'USD';
+    sector: string;
+    employee_count: number;
+    plan: 'free' | 'starter' | 'standard' | 'business' | 'enterprise';
+    cycle: 'monthly' | 'annual';
+    currency: 'XOF' | 'EUR' | 'USD';
+    payment: 'fedapay' | 'kkiapay' | 'card' | 'paypal' | 'transfer';
+    full_name: string;
     email: string;
+    phone: string;
     password: string;
     password_confirmation: string;
-    phone?: string;
+    cgu: boolean;
+    newsletter: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
