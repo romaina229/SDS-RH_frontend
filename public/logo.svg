@@ -1,0 +1,37 @@
+<svg width="360" height="96" viewBox="0 0 360 96" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="sdsrhLogoTitle">
+  <title id="sdsrhLogoTitle">SDS-RH — La plateforme africaine de gestion intelligente des ressources humaines</title>
+  <defs>
+    <linearGradient id="cellGradSmall" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5B4FE8"/>
+      <stop offset="100%" stop-color="#7A6FF0"/>
+    </linearGradient>
+    <linearGradient id="cellGradMid" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4A3FD6"/>
+      <stop offset="100%" stop-color="#3FA9E8"/>
+    </linearGradient>
+    <linearGradient id="cellGradLarge" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#17A6C8"/>
+      <stop offset="100%" stop-color="#17C8A6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mark: three ascending, isolated tenant cells linked by a growth path -->
+  <g transform="translate(4,8)">
+    <path d="M14 66 C 26 58, 30 46, 40 40 C 50 34, 54 24, 66 16" fill="none" stroke="#C9C6EE" stroke-width="2.5" stroke-dasharray="1 8" stroke-linecap="round"/>
+
+    <rect x="4" y="52" width="22" height="22" rx="7" fill="url(#cellGradSmall)"/>
+    <circle cx="15" cy="63" r="3.2" fill="#FFFFFF"/>
+
+    <rect x="30" y="34" width="28" height="28" rx="8" fill="url(#cellGradMid)"/>
+    <circle cx="44" cy="48" r="4" fill="#FFFFFF"/>
+
+    <rect x="58" y="8" width="34" height="34" rx="9" fill="url(#cellGradLarge)"/>
+    <circle cx="75" cy="25" r="4.6" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(112,0)" font-family="'Space Grotesk', 'Arial', sans-serif">
+    <text x="0" y="52" font-size="40" font-weight="700" letter-spacing="0.5" fill="#191A3D">SDS<tspan fill="#5B4FE8">·</tspan>RH</text>
+    <text x="2" y="72" font-size="12.5" font-weight="500" letter-spacing="0.4" fill="#6B6890">Gestion intelligente des ressources humaines</text>
+  </g>
+</svg>

@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import PrivateRoute from './PrivateRoute';
 
+// Page publique
+import Home from '../pages/marketing/Home';
+
 // Pages d'authentification
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
@@ -10,7 +13,7 @@ import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 
 // Pages principales
-import AdminDashboard from '../pages/admin/admindashboard';
+import AdminDashboard from '../pages/admin/AdminDashboard';
 import Performance from '../pages/performance/Performance';
 import Dashboard from '../pages/dashboard/Dashboard';
 import Employees from '../pages/employees/Employees';
@@ -43,6 +46,7 @@ const AppRoutes = () => {
                     <Route path="/register" element={<Register />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/" element={<Home />} />
 
                     {/* Routes protégées */}
                     <Route element={<PrivateRoute />}>

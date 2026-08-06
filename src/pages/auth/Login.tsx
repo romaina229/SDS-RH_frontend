@@ -25,26 +25,47 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <div className="flex justify-center">
-                        <div className="h-14 w-14 bg-primary-600 rounded-xl flex items-center justify-center">
-                            <span className="text-white font-bold text-2xl">SDS</span>
-                        </div>
+        <div className="min-h-screen grid lg:grid-cols-2">
+            {/* Panneau de marque */}
+            <div className="hidden lg:flex relative flex-col justify-between bg-nocturne-glow text-white p-12">
+                <Link to="/" className="flex items-center gap-2">
+                    <div className="h-9 w-9 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
+                        <span className="font-display font-semibold text-sm">SDS</span>
                     </div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        SDS-RH
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Plateforme africaine de gestion intelligente des RH
+                    <span className="font-display font-semibold tracking-tight">SDS-RH</span>
+                </Link>
+
+                <div className="max-w-sm">
+                    <p className="font-display text-3xl font-semibold leading-tight">
+                        Chaque organisation dans son propre espace, en toute sécurité.
+                    </p>
+                    <p className="mt-4 text-primary-100/70 text-sm leading-relaxed">
+                        Multi-tenant, multi-devises, conçu pour le contexte africain — une seule
+                        plateforme pour piloter les ressources humaines de votre structure.
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="rounded-md shadow-sm -space-y-px">
+                <p className="text-xs text-primary-200/50 font-mono">SDS-RH v1.0.0</p>
+            </div>
+
+            {/* Formulaire */}
+            <div className="flex items-center justify-center px-6 py-16 bg-white">
+                <div className="w-full max-w-sm">
+                    <div className="lg:hidden flex items-center gap-2 mb-10">
+                        <div className="h-9 w-9 rounded-lg bg-primary-700 flex items-center justify-center">
+                            <span className="text-white font-display font-semibold text-sm">SDS</span>
+                        </div>
+                        <span className="font-display font-semibold tracking-tight text-primary-950">SDS-RH</span>
+                    </div>
+
+                    <h1 className="font-display text-2xl font-semibold text-primary-950">Bon retour</h1>
+                    <p className="mt-2 text-sm text-primary-700/60">
+                        Connectez-vous à l'espace de votre organisation.
+                    </p>
+
+                    <form className="mt-8 space-y-5" onSubmit={handleSubmit(onSubmit)}>
                         <div>
-                            <label htmlFor="email" className="sr-only">
+                            <label htmlFor="email" className="block text-sm font-medium text-primary-900">
                                 Adresse email
                             </label>
                             <input
@@ -56,80 +77,60 @@ const Login: React.FC = () => {
                                     },
                                 })}
                                 type="email"
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                                placeholder="Adresse email"
+                                autoComplete="email"
+                                className="field"
+                                placeholder="vous@organisation.com"
                             />
-                            {errors.email && (
-                                <p className="text-danger-500 text-xs mt-1">{errors.email.message}</p>
-                            )}
+                            {errors.email && <p className="error">{errors.email.message}</p>}
                         </div>
+
                         <div>
-                            <label htmlFor="password" className="sr-only">
-                                Mot de passe
-                            </label>
+                            <div className="flex items-center justify-between">
+                                <label htmlFor="password" className="block text-sm font-medium text-primary-900">
+                                    Mot de passe
+                                </label>
+                                <Link to="/forgot-password" className="text-xs font-medium text-primary-600 hover:text-primary-800">
+                                    Oublié ?
+                                </Link>
+                            </div>
                             <input
                                 {...register('password', {
                                     required: 'Le mot de passe est requis',
-                                    minLength: {
-                                        value: 6,
-                                        message: 'Minimum 6 caractères',
-                                    },
+                                    minLength: { value: 6, message: 'Minimum 6 caractères' },
                                 })}
                                 type="password"
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                                placeholder="Mot de passe"
+                                autoComplete="current-password"
+                                className="field"
+                                placeholder="••••••••"
                             />
-                            {errors.password && (
-                                <p className="text-danger-500 text-xs mt-1">{errors.password.message}</p>
-                            )}
+                            {errors.password && <p className="error">{errors.password.message}</p>}
                         </div>
-                    </div>
 
-                    <div className="flex items-center justify-between">
-                        <div className="text-sm">
-                            <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                                Mot de passe oublié ?
-                            </Link>
-                        </div>
-                        <div className="text-sm">
-                            <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
-                                Créer une organisation
-                            </Link>
-                        </div>
-                    </div>
-
-                    <div>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="w-full inline-flex justify-center items-center gap-2 py-2.5 px-4 rounded-lg font-semibold text-white bg-primary-700 hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-colors"
                         >
                             {loading ? (
-                                <span className="flex items-center">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <>
+                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                     Connexion...
-                                </span>
+                                </>
                             ) : (
                                 'Se connecter'
                             )}
                         </button>
-                    </div>
-                </form>
+                    </form>
 
-                <div className="mt-6">
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-300"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-2 bg-gray-50 text-gray-500">
-                                Version 1.0.0
-                            </span>
-                        </div>
-                    </div>
+                    <p className="mt-8 text-center text-sm text-primary-700/70">
+                        Pas encore d'organisation sur SDS-RH ?{' '}
+                        <Link to="/register" className="font-semibold text-primary-700 hover:text-primary-900">
+                            Créez-en une
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>

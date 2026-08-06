@@ -35,21 +35,21 @@ const Register: React.FC = () => {
             <div className="max-w-2xl w-full">
                 {/* Logo et en-tête */}
                 <div className="text-center mb-8">
-                    <div className="flex justify-center">
+                    <Link to="/" className="flex justify-center">
                         <div className="h-16 w-16 bg-gradient-to-br from-primary-600 to-primary-700 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-200">
-                            <span className="text-white font-bold text-3xl">SDS</span>
+                            <span className="text-white font-display font-bold text-3xl">SDS</span>
                         </div>
-                    </div>
-                    <h2 className="mt-4 text-3xl font-extrabold text-gray-900 tracking-tight">
+                    </Link>
+                    <h2 className="mt-4 font-display text-3xl font-bold text-primary-950 tracking-tight">
                         Créer votre organisation
                     </h2>
-                    <p className="mt-2 text-sm text-gray-600">
-                        Commencez gratuitement avec 6 mois d'essai
+                    <p className="mt-2 text-sm text-primary-700/60">
+                        Un espace cloisonné et sécurisé, prêt en quelques minutes
                     </p>
                 </div>
 
                 {/* Formulaire */}
-                <div className="bg-white rounded-2xl shadow-xl shadow-gray-100/50 border border-gray-100 p-8 md:p-10">
+                <div className="bg-white rounded-2xl shadow-xl shadow-primary-100/50 border border-primary-100 p-8 md:p-10">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Nom de l'organisation */}

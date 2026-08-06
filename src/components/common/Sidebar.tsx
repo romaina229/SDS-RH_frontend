@@ -14,7 +14,9 @@ import {
     ChartBarIcon,
     CogIcon,
     FolderIcon,
+    BuildingOffice2Icon,
 } from '@heroicons/react/24/outline';
+import logo from '../../../public/logo.svg';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -29,10 +31,13 @@ interface NavigationItem {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
-    const { hasPermission } = useAuth();
+    const { hasPermission, isSuperAdmin } = useAuth();
 
     const navigation: NavigationItem[] = [
         { name: 'Tableau de bord', href: '/dashboard', icon: HomeIcon },
+        ...(isSuperAdmin
+            ? [{ name: 'AdminDashboard', href: '/admin/admindashboard', icon: BuildingOffice2Icon }]
+            : []),
         { name: 'Employés', href: '/employees', icon: UsersIcon, permission: 'view_employees' },
         { name: 'Départements', href: '/departments', icon: UserGroupIcon, permission: 'view_departments' },
         { name: 'Contrats', href: '/contracts', icon: DocumentTextIcon, permission: 'view_contracts' },
@@ -47,10 +52,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
     ];
 
     return (
-        <aside className={`fixed top-0 left-0 h-screen bg-primary-500 text-white transition-all duration-300 z-50 ${isOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'} ${isOpen ? 'lg:w-64' : 'lg:w-20'}`}>
-            <div className="flex items-center justify-center h-16 border-b border-primary-400">
+        <aside className={`fixed top-0 left-0 h-screen bg-primary-700 text-white transition-all duration-300 z-50 ${isOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'} ${isOpen ? 'lg:w-64' : 'lg:w-20'}`}>
+            <div className="flex items-center justify-center h-16 border-b border-primary-600">
                 {isOpen ? (
-                    <span className="text-xl font-bold">SDS-RH</span>
+                    <img src={logo} alt="SDS-RH" className="h-45 w-45" />
                 ) : (
                     <span className="text-xl font-bold">S</span>
                 )}
