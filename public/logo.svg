@@ -32,6 +32,6 @@
   <!-- Wordmark -->
   <g transform="translate(112,0)" font-family="'Space Grotesk', 'Arial', sans-serif">
     <text x="0" y="52" font-size="40" font-weight="700" letter-spacing="0.5" fill="#191A3D">SDS<tspan fill="#5B4FE8">·</tspan>RH</text>
-    <text x="2" y="72" font-size="12.5" font-weight="500" letter-spacing="0.4" fill="#6B6890">Gestion intelligente des ressources humaines</text>
+    <text x="2" y="70" font-size="11" font-weight="450" letter-spacing="0.4" fill="#6B6890">Gestion intelligente des ressources humaines</text>
   </g>
 </svg>

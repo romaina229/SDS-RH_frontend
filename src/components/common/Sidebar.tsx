@@ -52,8 +52,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
     ];
 
     return (
-        <aside className={`fixed top-0 left-0 h-screen bg-primary-700 text-white transition-all duration-300 z-50 ${isOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'} ${isOpen ? 'lg:w-64' : 'lg:w-20'}`}>
-            <div className="flex items-center justify-center h-16 border-b border-primary-600">
+        <aside className={`fixed top-0 left-0 h-screen bg-primary-800 text-white transition-all duration-300 z-50 ${isOpen ? 'w-64 translate-x-0' : 'w-20 -translate-x-full lg:translate-x-0'} ${isOpen ? 'lg:w-64' : 'lg:w-20'}`}>
+            <div className="flex items-center justify-center h-15 border-b border-primary-700">
                 {isOpen ? (
                     <img src={logo} alt="SDS-RH" className="h-45 w-45" />
                 ) : (
@@ -73,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                             to={item.href}
                             onClick={toggle}
                             className={({ isActive }) =>
-                                `flex items-center px-4 py-3 rounded-lg transition-colors ${
+                                `flex items-center px-4 py-2.5 rounded-lg transition-colors ${
                                     isActive
                                         ? 'bg-primary-600 text-white'
                                         : 'text-primary-200 hover:bg-primary-600 hover:text-white'

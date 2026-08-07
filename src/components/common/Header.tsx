@@ -9,6 +9,7 @@ import {
     Cog6ToothIcon, 
 } from '@heroicons/react/24/outline';
 import { type User } from '../../types';
+import logo from '../../../public/logo.svg';
 
 interface HeaderProps {
     toggleSidebar: () => void;
@@ -35,10 +36,8 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, user }) => {
             </button>
 
             <div className="flex-1 flex items-center justify-between ml-4">
-                <div>
-                    <h1 className="text-xl font-semibold text-gray-800">
-                        SDS-RH
-                    </h1>
+                <div className="flex items-center space-x-2">
+                    <img src={logo} alt="SDS-RH" className="h-60 w-60" />
                 </div>
 
                 <div className="flex items-center space-x-4">

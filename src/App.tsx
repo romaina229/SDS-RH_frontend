@@ -1,7 +1,7 @@
 import React from 'react';
 import AppRoutes from './routes/AppRoutes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+//import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
 
 const queryClient = new QueryClient({
@@ -18,7 +18,7 @@ const App: React.FC = () => {
     return (
         <QueryClientProvider client={queryClient}>
             <AppRoutes />
-            {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+           {/* {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}*/}
             <Toaster
                 position="top-right"
                 reverseOrder={false}
