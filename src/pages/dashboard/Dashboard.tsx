@@ -52,6 +52,10 @@ const Dashboard: React.FC = () => {
     return (
         <Layout>
             <div className="space-y-6">
+                
+                {/* AJOUT : bandeau avec le nom de l'organisation connectée */}
+                <OrganizationBanner />
+                
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">
                         Bonjour, {user?.first_name} 👋
@@ -59,11 +63,7 @@ const Dashboard: React.FC = () => {
                     <p className="text-gray-500 mt-1">
                         Voici un résumé de votre activité RH
                     </p>
-                </div>
-
-                {/* AJOUT : bandeau avec le nom de l'organisation connectée */}
-                <OrganizationBanner />
-
+                    </div>
                 <StatsCards stats={data.stats} />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

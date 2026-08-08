@@ -42,7 +42,7 @@ const OrganizationBanner: React.FC = () => {
                 </div>
             </div>
             <div className="hidden sm:block text-right shrink-0 pl-4">
-                <p className="text-xs text-primary-100/70 capitalize">{today}</p>
+                {/*<p className="text-xs text-primary-100/70 capitalize">{today}</p>*/}
                 {tenant.subscription_plan && (
                     <span className="mt-1 inline-block text-[10px] font-semibold uppercase tracking-wide bg-white/15 border border-white/20 rounded-full px-2 py-0.5">
                         Formule {tenant.subscription_plan}
