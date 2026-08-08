@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
     const navigation: NavigationItem[] = [
         { name: 'Tableau de bord', href: '/dashboard', icon: HomeIcon },
         ...(isSuperAdmin
-            ? [{ name: 'AdminDashboard', href: '/admin/admindashboard', icon: BuildingOffice2Icon }]
+            ? [{ name: 'AdminDashboard', href: '/admin', icon: BuildingOffice2Icon }]
             : []),
         { name: 'Employés', href: '/employees', icon: UsersIcon, permission: 'view_employees' },
         { name: 'Départements', href: '/departments', icon: UserGroupIcon, permission: 'view_departments' },
