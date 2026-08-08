@@ -6,6 +6,7 @@ import StatsCards from '../../components/dashboard/StatsCards';
 import DepartmentChart from '../../components/dashboard/DepartmentChart';
 import HiringTrend from '../../components/dashboard/HiringTrend';
 import RecentActivities from '../../components/dashboard/RecentActivities';
+import OrganizationBanner from '../../components/dashboard/OrganizationBanner';
 import { dashboard } from '../../api/dashboard';
 import type { DashboardStats } from '../../types';
 import toast from 'react-hot-toast';
@@ -59,6 +60,9 @@ const Dashboard: React.FC = () => {
                         Voici un résumé de votre activité RH
                     </p>
                 </div>
+
+                {/* AJOUT : bandeau avec le nom de l'organisation connectée */}
+                <OrganizationBanner />
 
                 <StatsCards stats={data.stats} />
 

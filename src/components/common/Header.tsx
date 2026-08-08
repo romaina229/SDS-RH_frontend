@@ -16,11 +16,18 @@ interface HeaderProps {
     user: User | null;
 }
 
+const today = new Date().toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
+    
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, user }) => {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState<boolean>(false);
-
+    const { tenant } = useAuth();
     const handleLogout = async (): Promise<void> => {
         await logout();
         navigate('/login');
@@ -37,7 +44,15 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, user }) => {
 
             <div className="flex-1 flex items-center justify-between ml-4">
                 <div className="flex items-center space-x-2">
-                    <img src={logo} alt="SDS-RH" className="h-60 w-60" />
+                     <img src={logo} alt="SDS-RH" className="h-60 w-60" />
+                    {tenant && (
+                        <span className="hidden md:inline text-sm font-semibold text-gray-700 border-l border-gray-200 pl-3 ml-1">
+                            {tenant.name}
+                        </span>
+                    )}
+                </div>
+                <div className="hidden sm:block text-right shrink-0 pl-4">
+                 <p className="text-sm text-gold-800 capitalize">{today}</p>
                 </div>
 
                 <div className="flex items-center space-x-4">
