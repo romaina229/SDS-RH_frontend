@@ -28,7 +28,7 @@ const chunkToWords = (num: number): string => {
 
 /**
  * Convertit un montant entier en toutes lettres, en français, pour la
- * mention légale du bulletin de paie ("Montant: ...").
+ * mention légale du bulletin de paie ("Montant en lettres: ...").
  */
 export const numberToFrenchWords = (n: number): string => {
     if (n === 0) return 'zéro';
@@ -43,10 +43,62 @@ export const numberToFrenchWords = (n: number): string => {
     return words.trim();
 };
 
+const MONTHS_FR = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+];
+
+const formatMonthLabel = (month: string): string => {
+    const [year, m] = month.split('-').map(Number);
+    if (!year || !m || m < 1 || m > 12) return month;
+    return `${MONTHS_FR[m - 1]} ${year}`;
+};
+
+const maritalStatusLabel = (status?: string, childrenCount?: number): string => {
+    const labels: Record<string, string> = {
+        single: 'Célibataire',
+        married: 'Marié(e)',
+        divorced: 'Divorcé(e)',
+        widowed: 'Veuf/Veuve',
+    };
+    const base = status ? (labels[status] || status) : 'Non renseignée';
+    const children = childrenCount ? ` — ${childrenCount} enfant(s)` : '';
+    return `${base}${children}`;
+};
+
+const statusLabel = (payroll: Payroll): string => {
+    if (payroll.status === 'paid') {
+        const date = payroll.paid_at ? new Date(payroll.paid_at).toLocaleDateString('fr-FR') : '';
+        return date ? `Payé le ${date}` : 'Payé';
+    }
+    if (payroll.status === 'processed') return 'En attente de paiement';
+    return 'Brouillon';
+};
+
+const seniority = (hireDate?: string): string => {
+    if (!hireDate) return '';
+    const start = new Date(hireDate);
+    if (Number.isNaN(start.getTime())) return '';
+    const now = new Date();
+    let years = now.getFullYear() - start.getFullYear();
+    let months = now.getMonth() - start.getMonth();
+    if (months < 0) {
+        years -= 1;
+        months += 12;
+    }
+    const parts: string[] = [];
+    if (years > 0) parts.push(`${years} an${years > 1 ? 's' : ''}`);
+    if (months > 0) parts.push(`${months} mois`);
+    return parts.length ? parts.join(' ') : "moins d'un mois";
+};
+
 /**
- * Génère le document HTML complet du bulletin de paie, structuré comme le
- * modèle officiel (en-tête organisation + QR code, bloc identité employé,
- * tableau code/libellé/gain/retenue, totaux, montant en lettres).
+ * Génère le document HTML complet du bulletin de paie, calqué sur le
+ * modèle de référence : bannière sombre avec logo + coordonnées de
+ * l'organisation, titre "BULLETIN DE PAIE", bloc identité employé sur deux
+ * colonnes (identité / situation & paiement), tableau des éléments de
+ * rémunération, total net mis en évidence, montant en lettres et QR code
+ * de vérification.
  *
  * `payroll` doit être chargé avec les relations employee.user,
  * employee.department, employee.position, tenant.
@@ -57,16 +109,22 @@ export const buildPayslipHtml = (payroll: Payroll): string => {
     const items = payroll.breakdown || [];
 
     const qrData = `${window.location.origin}/verify/${payroll.qr_token || payroll.id}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(qrData)}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
     const rows = items.map((it) => `
         <tr>
-            <td class="mono">${escapeHtml(it.code)}</td>
-            <td>${escapeHtml(it.label)}${it.patronal ? ' <span class="tag">(patronal)</span>' : ''}</td>
-            <td class="num">${it.gain != null ? it.gain.toLocaleString('fr-FR') : ''}</td>
-            <td class="num">${it.retenue != null ? it.retenue.toLocaleString('fr-FR') : ''}</td>
-            <td class="num">${it.rappel != null ? it.rappel.toLocaleString('fr-FR') : ''}</td>
+            <td>${escapeHtml(it.label)}${it.patronal ? ' <span class="tag">(charge patronale)</span>' : ''}</td>
+            <td class="num muted">${it.gain != null ? '' : ''}</td>
+            <td class="num muted">${it.gain != null || it.retenue != null ? '' : ''}</td>
+            <td class="num gain">${it.gain != null ? it.gain.toLocaleString('fr-FR') + ' FCFA' : ''}</td>
         </tr>
+        ${it.retenue != null ? `
+        <tr class="retenue-row">
+            <td class="indent">${escapeHtml(it.label)} (retenue)</td>
+            <td class="num muted"></td>
+            <td class="num muted"></td>
+            <td class="num retenue">-${it.retenue.toLocaleString('fr-FR')} FCFA</td>
+        </tr>` : ''}
     `).join('');
 
     const totalGain = items.filter((i) => i.gain != null).reduce((s, i) => s + (i.gain || 0), 0);
@@ -77,6 +135,8 @@ export const buildPayslipHtml = (payroll: Payroll): string => {
         ? `<img src="${escapeHtml(tenant.logo)}" alt="Logo" />`
         : `<div class="logo-placeholder">${escapeHtml((tenant?.name || 'SDS').slice(0, 3).toUpperCase())}</div>`;
 
+    const posteLabel = [employee?.position?.title, employee?.department?.name].filter(Boolean).join(' — Service : ');
+
     return `
         <!doctype html>
         <html lang="fr">
@@ -84,93 +144,124 @@ export const buildPayslipHtml = (payroll: Payroll): string => {
             <meta charset="utf-8">
             <title>Bulletin de paie — ${escapeHtml(employee?.user?.first_name)} ${escapeHtml(employee?.user?.last_name)}</title>
             <style>
-                body { font-family: Arial, sans-serif; margin: 30px; color: #111827; font-size: 12.5px; }
-                .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #191A3D; padding-bottom: 12px; margin-bottom: 16px; }
-                .header-left { display: flex; gap: 12px; align-items: center; }
-                .header img { height: 56px; }
-                .logo-placeholder { height: 56px; width: 56px; border-radius: 8px; background: #191A3D; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-                .org-name { font-weight: 700; font-size: 15px; max-width: 420px; }
-                .org-meta { color: #6b7280; font-size: 10.5px; }
-                h1 { font-size: 18px; margin: 10px 0 2px; }
-                .box { border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 14px; }
-                .id-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px 14px; margin: 10px 0; font-size: 11.5px; }
-                .id-grid div b { display: block; color: #6b7280; font-weight: 600; font-size: 10px; text-transform: uppercase; }
-                table { width: 100%; border-collapse: collapse; margin-top: 14px; }
-                th, td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; }
-                th { background: #f3f4f6; font-size: 10.5px; text-transform: uppercase; }
-                td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-                .mono { font-family: monospace; }
-                .tag { color: #9ca3af; font-size: 10px; }
-                .totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
-                .totals .box b { display: block; font-size: 10px; color: #6b7280; text-transform: uppercase; }
-                .net { font-size: 20px; font-weight: 800; color: #065f46; }
-                .words { margin-top: 14px; font-style: italic; }
-                @media print { body { margin: 12mm; } }
+                * { box-sizing: border-box; }
+                body { font-family: 'Segoe UI', Arial, sans-serif; margin: 24px; color: #14132B; font-size: 12.5px; background: #fff; }
+                .sheet { max-width: 780px; margin: 0 auto; border: 1px solid #E4E1F5; border-radius: 12px; overflow: hidden; }
+
+                .banner { background: linear-gradient(135deg, #191A3D, #2C2A6B); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
+                .banner-left { display: flex; gap: 14px; align-items: center; }
+                .banner img { height: 52px; width: 52px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px; }
+                .logo-placeholder { height: 52px; width: 52px; border-radius: 10px; background: #5B4FE8; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; letter-spacing: .5px; }
+                .org-name { font-weight: 800; font-size: 16px; letter-spacing: .2px; }
+                .org-meta { color: #C7C5E8; font-size: 10.8px; line-height: 1.5; margin-top: 2px; }
+                .banner img.qr { height: 64px; width: 64px; border-radius: 6px; background: #fff; padding: 3px; }
+
+                .title-block { text-align: center; padding: 18px 24px 6px; }
+                .title-block h1 { font-size: 19px; margin: 0; letter-spacing: .5px; color: #191A3D; }
+                .title-block .sub { color: #6B6890; font-size: 11.5px; margin-top: 3px; }
+
+                .id-box { margin: 14px 24px 0; background: #F7F6FB; border: 1px solid #E4E1F5; border-radius: 10px; padding: 14px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+                .id-box .employee-name { grid-column: 1 / -1; font-weight: 800; font-size: 14.5px; color: #191A3D; margin-bottom: 4px; }
+                .id-box .row { font-size: 11.5px; color: #14132B; padding: 2px 0; }
+                .id-box .row b { color: #6B6890; font-weight: 600; margin-right: 4px; }
+
+                table { width: 100%; border-collapse: collapse; margin: 16px 0 0; }
+                thead th { background: #F0EFFB; color: #5B4FE8; font-size: 10.3px; text-transform: uppercase; letter-spacing: .4px; text-align: left; padding: 8px 10px; border-bottom: 2px solid #E4E1F5; }
+                thead th.num { text-align: right; }
+                tbody td { padding: 7px 10px; border-bottom: 1px solid #EEEDF7; font-size: 12px; }
+                tbody td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+                tbody td.gain { color: #0EA98C; font-weight: 600; }
+                tbody td.retenue { color: #E5484D; font-weight: 600; }
+                tbody td.indent { padding-left: 22px; color: #6B6890; font-style: italic; }
+                tbody tr.retenue-row td { border-bottom: 1px solid #EEEDF7; }
+                .tag { color: #9C99C9; font-size: 9.5px; }
+
+                .totals-strip { margin: 0 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 14px 0; }
+                .totals-strip .box { border: 1px solid #E4E1F5; border-radius: 8px; padding: 10px 12px; }
+                .totals-strip .box b { display: block; font-size: 9.5px; text-transform: uppercase; color: #6B6890; letter-spacing: .3px; margin-bottom: 2px; }
+                .net-box { background: #191A3D; color: #fff; border: none !important; }
+                .net-box b { color: #C7C5E8 !important; }
+                .net-amount { font-size: 19px; font-weight: 800; color: #17C8A6; }
+
+                .words { margin: 0 24px 4px; font-style: italic; color: #6B6890; font-size: 11px; }
+                .footer { margin: 14px 24px 20px; padding-top: 10px; border-top: 1px dashed #E4E1F5; display: flex; justify-content: space-between; align-items: center; font-size: 9.5px; color: #9C99C9; }
+
+                @media print { body { margin: 0; } .sheet { border: none; border-radius: 0; } }
             </style>
         </head>
         <body>
-            <div class="header">
-                <div class="header-left">
-                    ${logoBlock}
-                    <div>
-                        <div class="org-name">${escapeHtml(orgName)}</div>
-                        <div class="org-meta">${escapeHtml(tenant?.address || '')}</div>
-                        <div class="org-meta">
-                            ${tenant?.phone ? `Tél: ${escapeHtml(tenant.phone)} ` : ''}
-                            ${tenant?.fax ? `· Fax: ${escapeHtml(tenant.fax)} ` : ''}
-                        </div>
-                        <div class="org-meta">
-                            ${tenant?.website ? escapeHtml(tenant.website) : ''}
-                            ${tenant?.ifu ? ` · IFU: ${escapeHtml(tenant.ifu)}` : ''}
+            <div class="sheet">
+                <div class="banner">
+                    <div class="banner-left">
+                        ${logoBlock}
+                        <div>
+                            <div class="org-name">${escapeHtml(orgName)}</div>
+                            <div class="org-meta">
+                                ${escapeHtml(tenant?.address || '')}<br>
+                                ${tenant?.phone ? `Tél: ${escapeHtml(tenant.phone)} ` : ''}
+                                ${tenant?.email ? `· ${escapeHtml(tenant.email)}` : ''}
+                                ${tenant?.ifu ? `<br>IFU: ${escapeHtml(tenant.ifu)}` : ''}
+                                ${tenant?.rccm ? ` · RCCM: ${escapeHtml(tenant.rccm)}` : ''}
+                            </div>
                         </div>
                     </div>
+                    <img class="qr" src="${qrUrl}" alt="QR code de vérification" />
                 </div>
-                <img src="${qrUrl}" alt="QR code de vérification" />
-            </div>
 
-            <h1>BULLETIN DE PAIE</h1>
-            <div class="org-meta">Salaire de : ${escapeHtml(payroll.month)}</div>
-
-            <div class="box" style="margin-top:10px;">
-                <div><b>${escapeHtml(employee?.user?.first_name)} ${escapeHtml(employee?.user?.last_name)}</b></div>
-                <div class="org-meta">${escapeHtml(employee?.user?.email)}</div>
-            </div>
-
-            <div class="id-grid box">
-                <div><b>Matricule</b>${escapeHtml(employee?.employee_number)}</div>
-                <div><b>Grade</b>${escapeHtml(employee?.position?.grade || '-')}</div>
-                <div><b>Situation matrimoniale</b>${escapeHtml(employee?.marital_status || '-')}</div>
-                <div><b>Enfants</b>${escapeHtml(employee?.children_count ?? 0)}</div>
-                <div><b>Corps</b>${escapeHtml(employee?.position?.corps || '-')}</div>
-                <div style="grid-column: span 3;"><b>Fonction</b>${escapeHtml(employee?.position?.title || '-')}</div>
-                <div style="grid-column: span 4;"><b>Affectation</b>${escapeHtml(employee?.department?.name || '-')}</div>
-            </div>
-
-            <table>
-                <thead>
-                    <tr><th>Code</th><th>Élément payé</th><th class="num">Gain</th><th class="num">Retenue</th><th class="num">Rappel</th></tr>
-                </thead>
-                <tbody>${rows}</tbody>
-            </table>
-
-            <div class="totals">
-                <div class="box">
-                    <b>Payé à</b>
-                    ${escapeHtml(employee?.bank_details?.bank_name || 'Espèces')}<br>
-                    ${escapeHtml(employee?.bank_details?.account_number || '')}
+                <div class="title-block">
+                    <h1>BULLETIN DE PAIE</h1>
+                    <div class="sub">${escapeHtml(formatMonthLabel(payroll.month))} — Réf. bulletin n° ${escapeHtml(String(payroll.qr_token || payroll.id).slice(0, 10).toUpperCase())}</div>
                 </div>
-                <div class="box">
-                    <b>Total gains / retenues</b>
-                    ${totalGain.toLocaleString('fr-FR')} / ${totalRetenue.toLocaleString('fr-FR')} FCFA
-                </div>
-                <div class="box">
-                    <b>Net à payer</b>
-                    <span class="net">${Number(payroll.net_salary).toLocaleString('fr-FR')} FCFA</span>
-                </div>
-            </div>
 
-            <div class="words">
-                Montant en lettres : ${numberToFrenchWords(Math.round(payroll.net_salary))} francs CFA
+                <div class="id-box">
+                    <div class="employee-name">${escapeHtml(employee?.user?.first_name)} ${escapeHtml(employee?.user?.last_name)}</div>
+                    <div class="row"><b>Matricule</b>${escapeHtml(employee?.employee_number)}</div>
+                    <div class="row"><b>Situation familiale</b>${escapeHtml(maritalStatusLabel(employee?.marital_status, employee?.children_count))}</div>
+                    <div class="row"><b>Poste</b>${escapeHtml(posteLabel || '-')}</div>
+                    <div class="row"><b>Jours travaillés</b>${escapeHtml(payroll.worked_days ?? '-')} jours</div>
+                    <div class="row"><b>Type de contrat</b>${escapeHtml((employee?.contracts?.[0]?.type || '-').toUpperCase())}</div>
+                    <div class="row"><b>Taux horaire indicatif</b>${payroll.hourly_rate ? Number(payroll.hourly_rate).toLocaleString('fr-FR') + ' FCFA/h' : '-'}</div>
+                    <div class="row"><b>Ancienneté</b>${escapeHtml(employee?.hire_date ? `Embauché(e) le ${new Date(employee.hire_date).toLocaleDateString('fr-FR')} — ${seniority(employee.hire_date)}` : '-')}</div>
+                    <div class="row"><b>Mode de paiement</b>${escapeHtml(payroll.payment_method || 'Virement bancaire')}</div>
+                    <div class="row"><b></b></div>
+                    <div class="row"><b>Statut</b>${escapeHtml(statusLabel(payroll))}</div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Élément de rémunération</th>
+                            <th class="num">Base</th>
+                            <th class="num">Taux</th>
+                            <th class="num">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+
+                <div class="totals-strip">
+                    <div class="box">
+                        <b>Total gains</b>
+                        ${totalGain.toLocaleString('fr-FR')} FCFA
+                    </div>
+                    <div class="box">
+                        <b>Total retenues</b>
+                        ${totalRetenue.toLocaleString('fr-FR')} FCFA
+                    </div>
+                    <div class="box net-box">
+                        <b>Net à payer</b>
+                        <span class="net-amount">${Number(payroll.net_salary).toLocaleString('fr-FR')} FCFA</span>
+                    </div>
+                </div>
+
+                <div class="words">
+                    Montant en lettres : ${numberToFrenchWords(Math.round(payroll.net_salary))} francs CFA
+                </div>
+
+                <div class="footer">
+                    <span>Document généré par SDS-RH — vérifiable via le QR code ci-dessus.</span>
+                    <span>${escapeHtml(orgName)}</span>
+                </div>
             </div>
         </body>
         </html>

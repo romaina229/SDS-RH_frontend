@@ -221,6 +221,8 @@ export interface Payroll {
   employee_id: number;
   qr_token?: string;
   month: string;
+  worked_days?: number;
+  hourly_rate?: number;
   base_salary: number;
   overtime_hours: number;
   overtime_amount: number;
@@ -231,6 +233,7 @@ export interface Payroll {
   net_salary: number;
   breakdown?: PayslipLineItem[];
   pay_slip_url?: string;
+  payment_method?: string;
   status: 'draft' | 'processed' | 'paid';
   paid_at?: string;
   created_at: string;
