@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import type { Payroll } from '../../types';
 import toast from 'react-hot-toast';
 import axios from '../../api/axios';
+import { buildPayslipHtml } from './paysliptemplate';
 import { CurrencyDollarIcon, ArrowDownTrayIcon as DownloadIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 const Payrolls: React.FC = () => {
@@ -57,75 +58,137 @@ const Payrolls: React.FC = () => {
         }
     };
 
+    const numberToFrenchWords = (n: number): string => {
+    const units = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix',
+        'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
+    const tens = ['', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante', 'quatre-vingt', 'quatre-vingt'];
+
+    const chunk = (num: number): string => {
+        if (num === 0) return '';
+        if (num < 20) return units[num];
+        if (num < 100) {
+            const t = Math.floor(num / 10), u = num % 10;
+            if (t === 7 || t === 9) return tens[t] + '-' + units[10 + u];
+            return tens[t] + (u ? (u === 1 && t !== 8 ? '-et-un' : '-' + units[u]) : (t === 8 ? 's' : ''));
+        }
+        const c = Math.floor(num / 100), r = num % 100;
+        return (c > 1 ? units[c] + ' cent' + (r === 0 ? 's' : '') : 'cent') + (r ? ' ' + chunk(r) : '');
+    };
+
+    if (n === 0) return 'zéro';
+    const millions = Math.floor(n / 1000000);
+    const thousands = Math.floor((n % 1000000) / 1000);
+    const rest = n % 1000;
+
+    let words = '';
+    if (millions) words += (millions > 1 ? chunk(millions) + ' millions ' : 'un million ');
+    if (thousands) words += (thousands > 1 ? chunk(thousands) + ' mille ' : 'mille ');
+    if (rest) words += chunk(rest);
+    return words.trim();
+};
+
     const downloadPayslip = async (id: number): Promise<void> => {
         try {
             const response = await axios.get(`/payrolls/${id}/download`);
             const payroll = response.data.payroll;
+            const employee = payroll.employee;
+            const items: Array<{ code: string; label: string; gain: number | null; retenue: number | null; patronal?: boolean }> =
+                payroll.breakdown || [];
 
-            const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
+            const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=1000');
             if (!printWindow) {
                 toast.error('Autorisez les fenêtres contextuelles pour imprimer le bulletin');
                 return;
             }
 
-            const employee = payroll.employee?.user;
-            const escapeHtml = (value: unknown): string =>
-                String(value ?? '')
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
+            const escapeHtml = (v: unknown) => String(v ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+
+            const qrData = `${window.location.origin}/verify/${payroll.qr_token || payroll.id}`;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(qrData)}`;
+
+            const rows = items.map((it) => `
+                <tr>
+                    <td class="mono">${escapeHtml(it.code)}</td>
+                    <td>${escapeHtml(it.label)}${it.patronal ? ' <span class="tag">(patronal)</span>' : ''}</td>
+                    <td class="num">${it.gain != null ? it.gain.toLocaleString('fr-FR') : ''}</td>
+                    <td class="num">${it.retenue != null ? it.retenue.toLocaleString('fr-FR') : ''}</td>
+                </tr>
+            `).join('');
+
+            const totalGain = items.filter(i => i.gain != null).reduce((s, i) => s + (i.gain || 0), 0);
+            const totalRetenue = items.filter(i => i.retenue != null && !i.patronal).reduce((s, i) => s + (i.retenue || 0), 0);
 
             printWindow.document.write(`
-                <!doctype html>
-                <html lang="fr">
-                <head>
-                    <meta charset="utf-8">
-                    <title>Bulletin de paie #${escapeHtml(payroll.id)} — SDS-RH</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 40px; color: #111827; }
-                        h1 { margin-bottom: 4px; }
-                        .muted { color: #6b7280; }
-                        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 24px 0; }
-                        .box { border: 1px solid #d1d5db; padding: 14px; border-radius: 8px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 24px; }
-                        th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; }
-                        th { background: #f3f4f6; }
-                        .net { font-size: 20px; font-weight: 700; }
-                    </style>
-                </head>
+                <!doctype html><html lang="fr"><head><meta charset="utf-8">
+                <title>Bulletin de paie — ${escapeHtml(employee?.user?.first_name)} ${escapeHtml(employee?.user?.last_name)}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 30px; color: #111827; font-size: 12.5px; }
+                    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #191A3D; padding-bottom: 12px; margin-bottom: 16px; }
+                    .header img { height: 56px; }
+                    .org-name { font-weight: 700; font-size: 16px; }
+                    .org-meta { color: #6b7280; font-size: 11px; }
+                    h1 { font-size: 18px; margin: 10px 0 2px; }
+                    .top-grid { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; margin-bottom: 14px; }
+                    .box { border: 1px solid #d1d5db; border-radius: 6px; padding: 10px 14px; }
+                    .id-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px 14px; margin: 10px 0; font-size: 11.5px; }
+                    .id-grid div b { display: block; color: #6b7280; font-weight: 600; font-size: 10px; text-transform: uppercase; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+                    th, td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; }
+                    th { background: #f3f4f6; font-size: 11px; text-transform: uppercase; }
+                    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+                    .mono { font-family: monospace; }
+                    .tag { color: #9ca3af; font-size: 10px; }
+                    .totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+                    .totals .box b { display: block; font-size: 10px; color: #6b7280; text-transform: uppercase; }
+                    .net { font-size: 20px; font-weight: 800; color: #065f46; }
+                    .words { margin-top: 14px; font-style: italic; }
+                    @media print { body { margin: 12mm; } }
+                </style></head>
                 <body>
-                    <h1>SDS-RH — Bulletin de paie</h1>
-                    <p class="muted">Période : ${escapeHtml(payroll.month)}</p>
+                    <div class="header">
+                        <div>
+                            <div class="org-name">${escapeHtml(payroll.tenant?.name || 'SDS-RH')}</div>
+                            <div class="org-meta">${escapeHtml(payroll.tenant?.address || '')}</div>
+                            <div class="org-meta">${payroll.tenant?.ifu ? 'IFU: ' + escapeHtml(payroll.tenant.ifu) : ''}</div>
+                        </div>
+                        <img src="${qrUrl}" alt="QR" />
+                    </div>
 
-                    <div class="grid">
-                        <div class="box">
-                            <strong>Employé</strong><br>
-                            ${escapeHtml(`${employee?.first_name ?? ''} ${employee?.last_name ?? ''}`)}<br>
-                            ${escapeHtml(employee?.email)}
-                        </div>
-                        <div class="box">
-                            <strong>Statut</strong><br>
-                            ${escapeHtml(payroll.status)}
-                        </div>
+                    <h1>BULLETIN DE PAIE</h1>
+                    <div class="org-meta">Salaire de : ${escapeHtml(payroll.month)}</div>
+
+                    <div class="box" style="margin-top:10px;">
+                        <div><b>${escapeHtml(employee?.user?.first_name)} ${escapeHtml(employee?.user?.last_name)}</b></div>
+                        <div class="org-meta">${escapeHtml(employee?.user?.email)}</div>
+                    </div>
+
+                    <div class="id-grid box">
+                        <div><b>Matricule</b>${escapeHtml(employee?.employee_number)}</div>
+                        <div><b>Grade</b>${escapeHtml(employee?.position?.grade || '-')}</div>
+                        <div><b>Situation</b>${escapeHtml(employee?.marital_status || '-')}</div>
+                        <div><b>Enfants</b>${escapeHtml(employee?.children_count ?? 0)}</div>
+                        <div style="grid-column: span 2"><b>Fonction</b>${escapeHtml(employee?.position?.title || '-')}</div>
+                        <div style="grid-column: span 2"><b>Département</b>${escapeHtml(employee?.department?.name || '-')}</div>
                     </div>
 
                     <table>
-                        <thead><tr><th>Élément</th><th>Montant (XOF)</th></tr></thead>
-                        <tbody>
-                            <tr><td>Salaire brut</td><td>${escapeHtml(payroll.base_salary)}</td></tr>
-                            <tr><td>Primes</td><td>${escapeHtml(payroll.bonuses)}</td></tr>
-                            <tr><td>Déductions</td><td>${escapeHtml(payroll.deductions)}</td></tr>
-                            <tr><td>Impôts</td><td>${escapeHtml(payroll.taxes)}</td></tr>
-                            <tr><td>Cotisations sociales salarié</td><td>${escapeHtml(payroll.social_security)}</td></tr>
-                            <tr><td class="net">Net à payer</td><td class="net">${escapeHtml(payroll.net_salary)}</td></tr>
-                        </tbody>
+                        <thead><tr><th>Code</th><th>Élément payé</th><th class="num">Gain</th><th class="num">Retenue</th></tr></thead>
+                        <tbody>${rows}</tbody>
                     </table>
-                </body>
-                </html>
+
+                    <div class="totals">
+                        <div class="box"><b>Payé à</b>${escapeHtml(employee?.bank_details?.bank_name || 'Espèces')}<br>${escapeHtml(employee?.bank_details?.account_number || '')}</div>
+                        <div class="box"><b>Total gains / retenues</b>${totalGain.toLocaleString('fr-FR')} / ${totalRetenue.toLocaleString('fr-FR')} FCFA</div>
+                        <div class="box"><b>Net à payer</b><span class="net">${Number(payroll.net_salary).toLocaleString('fr-FR')} FCFA</span></div>
+                    </div>
+
+                    <div class="words">Montant en lettres : ${numberToFrenchWords(Math.round(payroll.net_salary))} francs CFA</div>
+                </body></html>
             `);
 
+            printWindow.document.write(buildPayslipHtml(payroll));
             printWindow.document.close();
             printWindow.focus();
             printWindow.onload = () => printWindow.print();

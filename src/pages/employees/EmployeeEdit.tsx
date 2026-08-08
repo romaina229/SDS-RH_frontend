@@ -24,6 +24,9 @@ interface EmployeeFormData {
     emergency_contact: string;
     emergency_phone: string;
     status: 'active' | 'on_leave' | 'terminated' | 'suspended';
+    children_count: string;
+    bank_name: string;
+    bank_account_number: string;
 }
 
 const EmployeeEdit: React.FC = () => {
@@ -75,7 +78,10 @@ const EmployeeEdit: React.FC = () => {
                 emergency_contact: employee.emergency_contact || '',
                 emergency_phone: employee.emergency_phone || '',
                 status: employee.status,
-            });
+                children_count: String(employee.children_count || 0),
+                bank_name: employee.bank_details?.bank_name || '',
+                bank_account_number: employee.bank_details?.account_number || '',
+                        });
         } catch (error) {
             toast.error('Erreur lors du chargement de l\'employé');
             navigate('/employees');
@@ -87,7 +93,15 @@ const EmployeeEdit: React.FC = () => {
     const onSubmit = async (data: EmployeeFormData): Promise<void> => {
         setSaving(true);
         try {
-            await employees.update(Number(id), data);
+            const { bank_name, bank_account_number, children_count, ...rest } = data;
+
+            await employees.update(Number(id), {
+                ...rest,
+                children_count: Number(children_count) || 0,
+                bank_details: (bank_name || bank_account_number)
+                    ? { bank_name: bank_name || null, account_number: bank_account_number || null }
+                    : null,
+            });
             toast.success('Employé mis à jour avec succès');
             navigate('/employees');
         } catch (error: any) {
@@ -291,6 +305,40 @@ const EmployeeEdit: React.FC = () => {
                                             <option key={position.id} value={position.id}>{position.title}</option>
                                         ))}
                                 </select>
+                            </div>
+                            <div className="col-span-2">
+                                <h3 className="text-lg font-medium text-gray-900 mb-4 mt-4">Situation familiale & bancaire</h3>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Nombre d'enfants à charge</label>
+                                <input
+                                    {...register('children_count')}
+                                    type="number"
+                                    min="0"
+                                    max="30"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Nom de la banque</label>
+                                <input
+                                    {...register('bank_name')}
+                                    type="text"
+                                    placeholder="Ex: ORABANK BENIN"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Numéro de compte</label>
+                                <input
+                                    {...register('bank_account_number')}
+                                    type="text"
+                                    placeholder="Ex: BJ058010130130..."
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                />
                             </div>
                         </div>
 

@@ -1,10 +1,15 @@
 export interface Tenant {
   id: number;
   name: string;
+  emitting_authority?: string;
   email: string;
   phone?: string;
+  fax?: string;
+  website?: string;
   address?: string;
   logo?: string;
+  ifu?: string;
+  rccm?: string;
   subscription_plan: string;
   subscription_expires_at?: string;
   is_active: boolean;
@@ -32,6 +37,11 @@ export interface User {
   employee?: Employee;
 }
 
+export interface BankDetails {
+  bank_name?: string;
+  account_number?: string;
+}
+
 export interface Employee {
   id: number;
   tenant_id: number;
@@ -43,10 +53,11 @@ export interface Employee {
   birth_date?: string;
   gender?: 'male' | 'female' | 'other';
   marital_status?: 'single' | 'married' | 'divorced' | 'widowed';
+  children_count?: number;
   nationality?: string;
   emergency_contact?: string;
   emergency_phone?: string;
-  bank_details?: Record<string, any>;
+  bank_details?: BankDetails;
   social_security?: Record<string, any>;
   status: 'active' | 'on_leave' | 'terminated' | 'suspended';
   terminated_at?: string;
@@ -68,6 +79,7 @@ export interface Department {
   description?: string;
   manager_id?: number;
   parent_department_id?: number;
+  hierarchy_path?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -83,6 +95,7 @@ export interface Position {
   tenant_id: number;
   title: string;
   code?: string;
+  corps?: string;
   department_id?: number;
   grade?: string;
   min_salary?: number;
@@ -193,10 +206,20 @@ export interface Document {
   employee?: Employee;
 }
 
+export interface PayslipLineItem {
+  code: string;
+  label: string;
+  gain: number | null;
+  retenue: number | null;
+  rappel: number | null;
+  patronal?: boolean;
+}
+
 export interface Payroll {
   id: number;
   tenant_id: number;
   employee_id: number;
+  qr_token?: string;
   month: string;
   base_salary: number;
   overtime_hours: number;
@@ -206,13 +229,14 @@ export interface Payroll {
   taxes: number;
   social_security: number;
   net_salary: number;
-  breakdown?: Record<string, any>;
+  breakdown?: PayslipLineItem[];
   pay_slip_url?: string;
   status: 'draft' | 'processed' | 'paid';
   paid_at?: string;
   created_at: string;
   updated_at: string;
   employee?: Employee;
+  tenant?: Tenant;
 }
 
 export interface Recruitment {

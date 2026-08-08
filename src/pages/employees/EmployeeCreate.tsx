@@ -22,6 +22,9 @@ interface EmployeeFormData {
     nationality: string;
     emergency_contact: string;
     emergency_phone: string;
+    children_count: string;
+    bank_name: string;
+    bank_account_number: string;
 }
 
 interface DepartmentOption {
@@ -49,6 +52,9 @@ const emptyValues: EmployeeFormData = {
     nationality: 'Béninoise',
     emergency_contact: '',
     emergency_phone: '',
+    children_count: '0',
+    bank_name: '',
+    bank_account_number: '',
 };
 
 const EmployeeCreate: React.FC = () => {
@@ -93,17 +99,19 @@ const EmployeeCreate: React.FC = () => {
         setSaving(true);
 
         try {
-            // Idem Departments.tsx : les <select> laissés vides renvoient ""
-            // et non null, ce qui fait échouer la règle "nullable|exists"
-            // côté backend (422) dès que le département/poste/genre/statut
-            // marital n'est pas renseigné.
+            const { bank_name, bank_account_number, children_count, ...rest } = data;
+
             const payload = {
-                ...data,
+                ...rest,
+                children_count: Number(children_count) || 0,
                 department_id: data.department_id || null,
                 position_id: data.position_id || null,
                 gender: data.gender || null,
                 marital_status: data.marital_status || null,
                 birth_date: data.birth_date || null,
+                bank_details: (bank_name || bank_account_number)
+                    ? { bank_name: bank_name || null, account_number: bank_account_number || null }
+                    : null,
             };
 
             await employees.create(payload);
@@ -250,6 +258,40 @@ const EmployeeCreate: React.FC = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Téléphone du contact</label>
                                 <input {...register('emergency_phone')} type="tel" className="field" />
+                            </div>
+                            <div className="col-span-2">
+                            <h3 className="text-lg font-medium text-gray-900 mb-4 mt-4">Situation familiale & bancaire</h3>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Nombre d'enfants à charge</label>
+                                <input
+                                    {...register('children_count')}
+                                    type="number"
+                                    min="0"
+                                    max="30"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Nom de la banque</label>
+                                <input
+                                    {...register('bank_name')}
+                                    type="text"
+                                    placeholder="Ex: ORABANK BENIN"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Numéro de compte</label>
+                                <input
+                                    {...register('bank_account_number')}
+                                    type="text"
+                                    placeholder="Ex: BJ058010130130..."
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                />
                             </div>
                         </div>
 
