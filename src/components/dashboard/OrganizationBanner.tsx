@@ -15,12 +15,12 @@ const OrganizationBanner: React.FC = () => {
         .map((word) => word[0]?.toUpperCase())
         .join('');
 
-    const today = new Date().toLocaleDateString('fr-FR', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    });
+    //const today = new Date().toLocaleDateString('fr-FR', {
+     //   weekday: 'long',
+     //   day: 'numeric',
+      //  month: 'long',
+      //  year: 'numeric',
+    //});
 
     return (
         <div className="rounded-2xl bg-gradient-to-r from-primary-900 via-primary-800 to-primary-700 text-white px-6 py-5 flex items-center justify-between shadow-sm">
