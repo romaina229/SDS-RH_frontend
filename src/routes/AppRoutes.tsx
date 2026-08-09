@@ -38,6 +38,11 @@ import Reports from '../pages/reports/Reports';
 import Settings from '../pages/settings/Settings';
 import Profile from '../pages/settings/Profile';
 
+// Portail employé — "Mon espace"
+import MyPortal from '../pages/portal/MyPortal';
+import MyLeaves from '../pages/portal/MyLeaves';
+import MyPayslips from '../pages/portal/MyPayslips';
+
 const AppRoutes = () => {
     return (
         <BrowserRouter>
@@ -56,6 +61,11 @@ const AppRoutes = () => {
                     <Route element={<PrivateRoute />}>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/admin" element={<AdminDashboard />} />
+
+                        {/* Portail employé */}
+                        <Route path="/portal" element={<MyPortal />} />
+                        <Route path="/portal/leaves" element={<MyLeaves />} />
+                        <Route path="/portal/payslips" element={<MyPayslips />} />
 
                         {/* Employés */}
                         <Route path="/employees" element={<Employees />} />

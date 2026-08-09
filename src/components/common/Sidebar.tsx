@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     HomeIcon,
+    UserCircleIcon,
     UsersIcon,
     UserGroupIcon,
     DocumentTextIcon,
@@ -38,6 +39,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
         ...(isSuperAdmin
             ? [{ name: 'AdminDashboard', href: '/admin', icon: BuildingOffice2Icon }]
             : []),
+        // Portail employé : accessible à tout utilisateur disposant d'un
+        // dossier employé (aucune permission requise, cf. EmployeePortalController).
+        { name: 'Mon espace', href: '/portal', icon: UserCircleIcon },
         { name: 'Employés', href: '/employees', icon: UsersIcon, permission: 'view_employees' },
         { name: 'Départements', href: '/departments', icon: UserGroupIcon, permission: 'view_departments' },
         { name: 'Contrats', href: '/contracts', icon: DocumentTextIcon, permission: 'view_contracts' },
