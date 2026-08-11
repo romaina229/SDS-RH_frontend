@@ -107,7 +107,7 @@ const MyPortal: React.FC = () => {
             title: 'Mes documents',
             desc: `${documents_count} document(s)`,
             icon: FolderIcon,
-            href: '/documents',
+            href: '/portal/documents',
             color: 'bg-blue-50 text-blue-600',
         },
         {
@@ -116,6 +116,13 @@ const MyPortal: React.FC = () => {
             icon: DocumentTextIcon,
             href: '/portal/payslips',
             color: 'bg-purple-50 text-purple-600',
+        },
+        {
+            title: 'Mon parcours',
+            desc: 'Promotions, mutations, contrats',
+            icon: ClockIcon,
+            href: '/portal/history',
+            color: 'bg-indigo-50 text-indigo-600',
         },
     ];
 
@@ -184,7 +191,7 @@ const MyPortal: React.FC = () => {
                     </Card>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     {links.map((link) => (
                         <Link key={link.href} to={link.href}>
                             <Card className="hover:shadow-md transition-shadow h-full">

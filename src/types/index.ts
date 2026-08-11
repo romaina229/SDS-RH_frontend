@@ -109,6 +109,7 @@ export interface Position {
 }
 
 export interface Contract {
+  amendments: any;
   id: number;
   tenant_id: number;
   employee_id: number;
@@ -128,6 +129,106 @@ export interface Contract {
   employee?: Employee;
   days_remaining?: number;
   is_expiring_soon?: boolean;
+}
+
+export interface ContractAmendment {
+    id: number;
+    contract_id: number;
+    employee_id: number;
+    type: 'salary_change' | 'position_change' | 'duration_extension' | 'working_time_change' | 'contract_type_change' | 'other';
+    title: string;
+    description?: string;
+    effective_date: string;
+    previous_base_salary?: number;
+    new_base_salary?: number;
+    previous_end_date?: string;
+    new_end_date?: string;
+    previous_type?: string;
+    new_type?: string;
+    previous_position_id?: number;
+    new_position_id?: number;
+    document_path?: string;
+    created_by?: number;
+    created_at: string;
+    updated_at: string;
+    previousPosition?: Position;
+    newPosition?: Position;
+    creator?: User;
+    type_label: string;
+}
+
+// src/types/index.ts
+export interface OrganizationNode {
+    id: number;
+    tenant_id: number;
+    employee_id?: number;
+    title: string;
+    node_type: 'department' | 'position' | 'employee';
+    parent_id?: number;
+    level: number;
+    sort_order: number;
+    is_active: boolean;
+    metadata?: Record<string, any>;
+    created_at: string;
+    updated_at: string;
+    employee?: Employee;
+    parent?: OrganizationNode;
+    children?: OrganizationNode[];
+    full_title: string;
+}
+
+export interface Notification {
+    id: number;
+    tenant_id: number;
+    user_id?: number;
+    title: string;
+    message: string;
+    type: string;
+    data?: Record<string, any>;
+    link?: string;
+    status: 'unread' | 'read';
+    read_at?: string;
+    created_at: string;
+    updated_at: string;
+    user?: User;
+}
+
+export interface EmployeeHistory {
+  id: number;
+  tenant_id: number;
+  employee_id: number;
+  type:
+    | 'hire'
+    | 'promotion'
+    | 'transfer'
+    | 'salary_change'
+    | 'title_change'
+    | 'contract_change'
+    | 'suspension'
+    | 'warning'
+    | 'commendation'
+    | 'termination'
+    | 'reinstatement'
+    | 'other';
+  type_label?: string;
+  title: string;
+  description?: string;
+  effective_date: string;
+  previous_department_id?: number;
+  new_department_id?: number;
+  previous_position_id?: number;
+  new_position_id?: number;
+  previous_salary?: number;
+  new_salary?: number;
+  initiated_by?: number;
+  metadata?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  previous_department?: Department;
+  new_department?: Department;
+  previous_position?: Position;
+  new_position?: Position;
+  initiator?: User;
 }
 
 export interface Leave {

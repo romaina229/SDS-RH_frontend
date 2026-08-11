@@ -58,22 +58,12 @@ const Payrolls: React.FC = () => {
         }
     };
 
-    /**
-     * BUG CORRIGÉ : cette fonction appelait auparavant
-     * `printWindow.document.write(...)` DEUX fois de suite (une fois avec un
-     * gabarit HTML codé en dur ici, puis une seconde fois avec
-     * `buildPayslipHtml(payroll)`), ce qui produisait un document HTML
-     * invalide (deux <html> concaténés) et un rendu d'impression cassé.
-     * On utilise désormais uniquement le gabarit centralisé
-     * `buildPayslipHtml`, qui est la seule source de vérité pour la mise en
-     * page du bulletin de paie.
-     */
     const downloadPayslip = async (id: number): Promise<void> => {
         try {
             const response = await axios.get(`/payrolls/${id}/download`);
             const payroll: Payroll = response.data.payroll;
 
-            const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=1000');
+            const printWindow = window.open('', '_blank', 'width=900,height=1000');
             if (!printWindow) {
                 toast.error('Autorisez les fenêtres contextuelles pour imprimer le bulletin');
                 return;
@@ -82,7 +72,10 @@ const Payrolls: React.FC = () => {
             printWindow.document.write(buildPayslipHtml(payroll));
             printWindow.document.close();
             printWindow.focus();
-            printWindow.onload = () => printWindow.print();
+            
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
         } catch (error) {
             toast.error('Erreur lors de la génération du bulletin');
         }
@@ -137,7 +130,6 @@ const Payrolls: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Résumé */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Card>
                         <div className="flex items-center justify-between">
@@ -174,7 +166,6 @@ const Payrolls: React.FC = () => {
                     </Card>
                 </div>
 
-                {/* Tableau des paies */}
                 <Card>
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">

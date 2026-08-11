@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import NotificationDropdown from './NotificationDropdown';
 import { useNavigate } from 'react-router-dom';
 import {
     Bars3Icon,
-    BellIcon,
+    //BellIcon,
     UserCircleIcon,
     ArrowRightOnRectangleIcon,
     Cog6ToothIcon, 
@@ -51,13 +52,14 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, user }) => {
                         </span>
                     )}
                 </div>
-                <div className="hidden sm:block text-right shrink-0 pl-4">
-                 <p className="text-sm text-gold-800 capitalize">{today}</p>
-                </div>
 
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4"> 
+                    <div className="hidden sm:block text-right shrink-0 pl-4">
+                    <p className="text-sm text-gold-800 capitalize">{today}</p>
+                    </div>                   
                     <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
-                        <BellIcon className="h-6 w-6 text-gray-600" />
+                        <NotificationDropdown />
+                        {/*<BellIcon className="h-6 w-6 text-gray-600" />*/}
                         <span className="absolute top-1 right-1 w-2 h-2 bg-danger-500 rounded-full"></span>
                     </button>
 

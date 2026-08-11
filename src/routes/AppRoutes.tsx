@@ -26,6 +26,8 @@ import Departments from '../pages/departments/Departments';
 import Contracts from '../pages/contracts/Contracts';
 import ContractCreate from '../pages/contracts/ContractCreat';
 import ContractEdit from '../pages/contracts/ContractEdit';
+import ContractShow from '../pages/contracts/ContractShow';
+import Notifications from '../pages/notifications/Notifications';
 import Leaves from '../pages/leaves/Leaves';
 import LeaveCreate from '../pages/leaves/LeaveCreate';
 import Attendance from '../pages/attendance/Attendance';
@@ -37,11 +39,14 @@ import Trainings from '../pages/trainings/Trainings';
 import Reports from '../pages/reports/Reports';
 import Settings from '../pages/settings/Settings';
 import Profile from '../pages/settings/Profile';
+import Organigram from '../pages/organigram/Organigram'
 
 // Portail employé — "Mon espace"
 import MyPortal from '../pages/portal/MyPortal';
 import MyLeaves from '../pages/portal/MyLeaves';
+import MyDocuments from '../pages/portal/MyDocuments';
 import MyPayslips from '../pages/portal/MyPayslips';
+import MyHistory from '../pages/portal/MyHistory';
 
 const AppRoutes = () => {
     return (
@@ -65,7 +70,9 @@ const AppRoutes = () => {
                         {/* Portail employé */}
                         <Route path="/portal" element={<MyPortal />} />
                         <Route path="/portal/leaves" element={<MyLeaves />} />
+                        <Route path="/portal/documents" element={<MyDocuments />} />
                         <Route path="/portal/payslips" element={<MyPayslips />} />
+                        <Route path="/portal/history" element={<MyHistory />} />
 
                         {/* Employés */}
                         <Route path="/employees" element={<Employees />} />
@@ -75,11 +82,14 @@ const AppRoutes = () => {
 
                         {/* Départements */}
                         <Route path="/departments" element={<Departments />} />
+                        <Route path="/organigram" element={<Organigram />} />
+                        <Route path="/notifications" element={<Notifications />} />
 
                         {/* Contrats */}
                         <Route path="/contracts" element={<Contracts />} />
                         <Route path="/contracts/create" element={<ContractCreate />} />
                         <Route path="/contracts/:id/edit" element={<ContractEdit />} />
+                        <Route path="/contracts/:id" element={<ContractShow />} />
 
                         {/* Congés */}
                         <Route path="/leaves" element={<Leaves />} />
@@ -89,7 +99,7 @@ const AppRoutes = () => {
                         <Route path="/attendance" element={<Attendance />} />
                         <Route path="/attendance/qr" element={<QRClock />} />
 
-                        {/* Documents */}
+                        {/* Documents (vue organisation, gérée par les RH/admins) */}
                         <Route path="/documents" element={<Documents />} />
 
                         {/* Paie */}

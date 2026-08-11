@@ -3,8 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
+import CareerTimeline from '../../components/employees/CareerTimeline';
 import { employees } from '../../api/employees';
-import type { Employee } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import type { Employee, EmployeeHistory } from '../../types';
 import {
     PencilIcon,
     ArrowLeftIcon,
@@ -14,20 +16,45 @@ import {
     UserGroupIcon,
     DocumentTextIcon,
     CurrencyDollarIcon,
+    PlusIcon,
+    ClockIcon,
 } from '@heroicons/react/24/outline';
 
 const toast = {
     error: (message: string) => console.error(message),
 };
 
+interface HistoryFormData {
+    type: string;
+    title: string;
+    description: string;
+    effective_date: string;
+    new_salary: string;
+}
+
+const emptyHistoryForm: HistoryFormData = {
+    type: 'promotion',
+    title: '',
+    description: '',
+    effective_date: new Date().toISOString().slice(0, 10),
+    new_salary: '',
+};
+
 const EmployeeShow: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { hasPermission } = useAuth();
     const [loading, setLoading] = useState<boolean>(true);
     const [employee, setEmployee] = useState<Employee | null>(null);
+    const [history, setHistory] = useState<EmployeeHistory[]>([]);
+    const [historyLoading, setHistoryLoading] = useState<boolean>(true);
+    const [showHistoryForm, setShowHistoryForm] = useState<boolean>(false);
+    const [savingHistory, setSavingHistory] = useState<boolean>(false);
+    const [historyForm, setHistoryForm] = useState<HistoryFormData>(emptyHistoryForm);
 
     useEffect(() => {
         fetchEmployee();
+        fetchHistory();
     }, [id]);
 
     const fetchEmployee = async (): Promise<void> => {
@@ -39,6 +66,51 @@ const EmployeeShow: React.FC = () => {
             navigate('/employees');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchHistory = async (): Promise<void> => {
+        setHistoryLoading(true);
+        try {
+            const response = await employees.history.list(Number(id));
+            setHistory(response.data.data);
+        } catch (error) {
+            // Silencieux : l'historique est secondaire par rapport à la fiche.
+        } finally {
+            setHistoryLoading(false);
+        }
+    };
+
+    const handleAddHistory = async (e: React.FormEvent): Promise<void> => {
+        e.preventDefault();
+        if (!historyForm.title) return;
+
+        setSavingHistory(true);
+        try {
+            await employees.history.create(Number(id), {
+                type: historyForm.type,
+                title: historyForm.title,
+                description: historyForm.description || null,
+                effective_date: historyForm.effective_date,
+                new_salary: historyForm.new_salary ? Number(historyForm.new_salary) : null,
+            });
+            setHistoryForm(emptyHistoryForm);
+            setShowHistoryForm(false);
+            fetchHistory();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Erreur lors de l'ajout de l'événement");
+        } finally {
+            setSavingHistory(false);
+        }
+    };
+
+    const handleDeleteHistory = async (historyId: number): Promise<void> => {
+        if (!confirm('Supprimer cet événement de carrière ?')) return;
+        try {
+            await employees.history.delete(historyId);
+            fetchHistory();
+        } catch (error) {
+            toast.error("Erreur lors de la suppression de l'événement");
         }
     };
 
@@ -169,6 +241,119 @@ const EmployeeShow: React.FC = () => {
                             </div>
                         ) : (
                             <p className="text-gray-500 text-center py-4">Aucun document</p>
+                        )}
+                    </Card>
+                </div>
+
+                {/* Historique de carrière */}
+                <div>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <ClockIcon className="h-5 w-5 text-gray-400" />
+                            Historique de carrière
+                        </h2>
+                        {hasPermission('edit_employees') && (
+                            <button
+                                onClick={() => setShowHistoryForm((v) => !v)}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary-700 bg-primary-50 rounded-md hover:bg-primary-100"
+                            >
+                                <PlusIcon className="h-4 w-4" />
+                                Ajouter un événement
+                            </button>
+                        )}
+                    </div>
+
+                    {showHistoryForm && (
+                        <Card className="mb-4">
+                            <form onSubmit={handleAddHistory} className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Type d'événement *</label>
+                                        <select
+                                            required
+                                            value={historyForm.type}
+                                            onChange={(e) => setHistoryForm({ ...historyForm, type: e.target.value })}
+                                            className="field"
+                                        >
+                                            <option value="promotion">Promotion</option>
+                                            <option value="commendation">Distinction</option>
+                                            <option value="warning">Avertissement</option>
+                                            <option value="suspension">Suspension</option>
+                                            <option value="reinstatement">Réintégration</option>
+                                            <option value="other">Autre</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Date d'effet *</label>
+                                        <input
+                                            required
+                                            type="date"
+                                            value={historyForm.effective_date}
+                                            onChange={(e) => setHistoryForm({ ...historyForm, effective_date: e.target.value })}
+                                            className="field"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700">Titre *</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            value={historyForm.title}
+                                            onChange={(e) => setHistoryForm({ ...historyForm, title: e.target.value })}
+                                            placeholder="Ex: Promotion au poste de Responsable RH"
+                                            className="field"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                                        <textarea
+                                            value={historyForm.description}
+                                            onChange={(e) => setHistoryForm({ ...historyForm, description: e.target.value })}
+                                            rows={2}
+                                            className="field"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Nouveau salaire (optionnel)</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={historyForm.new_salary}
+                                            onChange={(e) => setHistoryForm({ ...historyForm, new_salary: e.target.value })}
+                                            className="field"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowHistoryForm(false)}
+                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={savingHistory}
+                                        className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50"
+                                    >
+                                        {savingHistory ? 'Enregistrement...' : "Ajouter à l'historique"}
+                                    </button>
+                                </div>
+                            </form>
+                        </Card>
+                    )}
+
+                    <Card>
+                        {historyLoading ? (
+                            <div className="py-8 flex justify-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary-200 border-t-primary-600" />
+                            </div>
+                        ) : (
+                            <CareerTimeline
+                                history={history}
+                                onDelete={hasPermission('edit_employees') ? handleDeleteHistory : undefined}
+                            />
                         )}
                     </Card>
                 </div>

@@ -13,11 +13,24 @@ interface ListParams {
  */
 export const portal = {
     summary: () => axios.get('/portal/summary'),
+
     leaves: (params?: ListParams) => axios.get('/portal/leaves', { params }),
     leaveBalance: () => axios.get('/portal/leaves/balance'),
+
     documents: (params?: ListParams) => axios.get('/portal/documents', { params }),
+    uploadDocument: (formData: FormData) =>
+        axios.post('/portal/documents', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        }),
+    downloadDocument: (id: number | string) =>
+        axios.get(`/portal/documents/${id}/download`, { responseType: 'blob' }),
+    deleteDocument: (id: number | string) => axios.delete(`/portal/documents/${id}`),
+
     payslips: (params?: ListParams) => axios.get('/portal/payslips', { params }),
     payslip: (id: number | string) => axios.get(`/portal/payslips/${id}`),
+
+    // Module carrière — lecture seule de mon propre parcours.
+    history: () => axios.get('/portal/history'),
 };
 
 export default portal;

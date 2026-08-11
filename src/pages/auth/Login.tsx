@@ -45,7 +45,7 @@ const Login: React.FC = () => {
                     </p>
                 </div>
 
-                <p className="text-xs text-primary-200/50 font-mono">SDS-RH v1.0.0</p>
+                <p className="text-xs text-primary-200/50 font-mono">SDS-RH v1.5.3</p>
             </div>
 
             {/* Formulaire */}
