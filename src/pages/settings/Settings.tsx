@@ -52,6 +52,7 @@ const Settings: React.FC = () => {
         setLoading(true);
         try {
             await axios.put('/settings', {
+                picture: logoPreview,
                 name: settings.company_name,
                 emitting_authority: settings.emitting_authority || null,
                 email: settings.company_email,

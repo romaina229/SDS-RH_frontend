@@ -8,9 +8,14 @@ const escapeHtml = (value: unknown): string =>
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
 
+const formatCurrency = (value: number): string => {
+    if (!value || isNaN(value)) return '0 FCFA';
+    return Math.round(value).toLocaleString('fr-FR') + ' FCFA';
+};
+
 const UNITS = ['', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix',
     'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'];
-const TENS = ['', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante', 'quatre-vingt', 'quatre-vingt'];
+const TENS = ['', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante', 'soixante-dix', 'quatre-vingt', 'quatre-vingt-dix'];
 
 const chunkToWords = (num: number): string => {
     if (num === 0) return '';
@@ -18,7 +23,8 @@ const chunkToWords = (num: number): string => {
     if (num < 100) {
         const t = Math.floor(num / 10);
         const u = num % 10;
-        if (t === 7 || t === 9) return `${TENS[t]}-${UNITS[10 + u]}`;
+        if (t === 7) return `soixante-${UNITS[10 + u]}`;
+        if (t === 9) return `quatre-vingt-${UNITS[10 + u]}`;
         return TENS[t] + (u ? (u === 1 && t !== 8 ? '-et-un' : `-${UNITS[u]}`) : (t === 8 ? 's' : ''));
     }
     const c = Math.floor(num / 100);
@@ -26,10 +32,6 @@ const chunkToWords = (num: number): string => {
     return (c > 1 ? `${chunkToWords(c)} cent${r === 0 ? 's' : ''}` : 'cent') + (r ? ` ${chunkToWords(r)}` : '');
 };
 
-/**
- * Convertit un montant entier en toutes lettres, en français, pour la
- * mention légale du bulletin de paie ("Montant en lettres: ...").
- */
 export const numberToFrenchWords = (n: number): string => {
     if (n === 0) return 'zéro';
     const millions = Math.floor(n / 1000000);
@@ -78,7 +80,7 @@ const statusLabel = (payroll: Payroll): string => {
 const seniority = (hireDate?: string): string => {
     if (!hireDate) return '';
     const start = new Date(hireDate);
-    if (Number.isNaN(start.getTime())) return '';
+    if (isNaN(start.getTime())) return '';
     const now = new Date();
     let years = now.getFullYear() - start.getFullYear();
     let months = now.getMonth() - start.getMonth();
@@ -92,17 +94,6 @@ const seniority = (hireDate?: string): string => {
     return parts.length ? parts.join(' ') : "moins d'un mois";
 };
 
-/**
- * Génère le document HTML complet du bulletin de paie, calqué sur le
- * modèle de référence : bannière sombre avec logo + coordonnées de
- * l'organisation, titre "BULLETIN DE PAIE", bloc identité employé sur deux
- * colonnes (identité / situation & paiement), tableau des éléments de
- * rémunération, total net mis en évidence, montant en lettres et QR code
- * de vérification.
- *
- * `payroll` doit être chargé avec les relations employee.user,
- * employee.department, employee.position, tenant.
- */
 export const buildPayslipHtml = (payroll: Payroll): string => {
     const employee = payroll.employee;
     const tenant = payroll.tenant;
@@ -111,24 +102,37 @@ export const buildPayslipHtml = (payroll: Payroll): string => {
     const qrData = `${window.location.origin}/verify/${payroll.qr_token || payroll.id}`;
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
-    const rows = items.map((it) => `
-        <tr>
-            <td>${escapeHtml(it.label)}${it.patronal ? ' <span class="tag">(charge patronale)</span>' : ''}</td>
-            <td class="num muted">${it.gain != null ? '' : ''}</td>
-            <td class="num muted">${it.gain != null || it.retenue != null ? '' : ''}</td>
-            <td class="num gain">${it.gain != null ? it.gain.toLocaleString('fr-FR') + ' FCFA' : ''}</td>
-        </tr>
-        ${it.retenue != null ? `
-        <tr class="retenue-row">
-            <td class="indent">${escapeHtml(it.label)} (retenue)</td>
-            <td class="num muted"></td>
-            <td class="num muted"></td>
-            <td class="num retenue">-${it.retenue.toLocaleString('fr-FR')} FCFA</td>
-        </tr>` : ''}
-    `).join('');
+    const rows = items.map((it: any) => {
+        let row = '';
+        if (it.gain != null && it.gain > 0) {
+            row += `
+                <tr>
+                    <td>${escapeHtml(it.label)}${it.patronal ? ' <span class="tag">(charge patronale)</span>' : ''}</td>
+                    <td class="num muted"></td>
+                    <td class="num muted"></td>
+                    <td class="num gain">${formatCurrency(it.gain)}</td>
+                </tr>
+            `;
+        }
+        if (it.retenue != null && it.retenue > 0) {
+            row += `
+                <tr class="retenue-row">
+                    <td class="indent">${escapeHtml(it.label)}</td>
+                    <td class="num muted"></td>
+                    <td class="num muted"></td>
+                    <td class="num retenue">${formatCurrency(it.retenue)}</td>
+                </tr>
+            `;
+        }
+        return row;
+    }).join('');
 
-    const totalGain = items.filter((i) => i.gain != null).reduce((s, i) => s + (i.gain || 0), 0);
-    const totalRetenue = items.filter((i) => i.retenue != null && !i.patronal).reduce((s, i) => s + (i.retenue || 0), 0);
+    const totalGain = items
+        .filter((i: any) => i.gain != null && i.gain > 0)
+        .reduce((s: number, i: any) => s + Number(i.gain), 0);
+    const totalRetenue = items
+        .filter((i: any) => i.retenue != null && i.retenue > 0 && !i.patronal)
+        .reduce((s: number, i: any) => s + Number(i.retenue), 0);
 
     const orgName = tenant?.emitting_authority || tenant?.name || 'Organisation';
     const logoBlock = tenant?.logo
@@ -215,16 +219,16 @@ export const buildPayslipHtml = (payroll: Payroll): string => {
 
                 <div class="id-box">
                     <div class="employee-name">${escapeHtml(employee?.user?.first_name)} ${escapeHtml(employee?.user?.last_name)}</div>
-                    <div class="row"><b>Matricule</b>${escapeHtml(employee?.employee_number)}</div>
-                    <div class="row"><b>Situation familiale</b>${escapeHtml(maritalStatusLabel(employee?.marital_status, employee?.children_count))}</div>
-                    <div class="row"><b>Poste</b>${escapeHtml(posteLabel || '-')}</div>
-                    <div class="row"><b>Jours travaillés</b>${escapeHtml(payroll.worked_days ?? '-')} jours</div>
-                    <div class="row"><b>Type de contrat</b>${escapeHtml((employee?.contracts?.[0]?.type || '-').toUpperCase())}</div>
-                    <div class="row"><b>Taux horaire indicatif</b>${payroll.hourly_rate ? Number(payroll.hourly_rate).toLocaleString('fr-FR') + ' FCFA/h' : '-'}</div>
-                    <div class="row"><b>Ancienneté</b>${escapeHtml(employee?.hire_date ? `Embauché(e) le ${new Date(employee.hire_date).toLocaleDateString('fr-FR')} — ${seniority(employee.hire_date)}` : '-')}</div>
-                    <div class="row"><b>Mode de paiement</b>${escapeHtml(payroll.payment_method || 'Virement bancaire')}</div>
+                    <div class="row"><b>Matricule :</b>${escapeHtml(employee?.employee_number)}</div>
+                    <div class="row"><b>Situation familiale :</b>${escapeHtml(maritalStatusLabel(employee?.marital_status, employee?.children_count))}</div>
+                    <div class="row"><b>Poste :</b>${escapeHtml(posteLabel || '-')}</div>
+                    <div class="row"><b>Jours travaillés :</b>${escapeHtml(payroll.worked_days ?? '-')} jours</div>
+                    <div class="row"><b>Type de contrat :</b>${escapeHtml((employee?.contracts?.[0]?.type || '-').toUpperCase())}</div>
+                    <div class="row"><b>Taux horaire indicatif :</b>${payroll.hourly_rate ? formatCurrency(payroll.hourly_rate) + '/h' : '-'}</div>
+                    <div class="row"><b>Ancienneté :</b>${escapeHtml(employee?.hire_date ? `Embauché(e) le ${new Date(employee.hire_date).toLocaleDateString('fr-FR')} — ${seniority(employee.hire_date)}` : '-')}</div>
+                    <div class="row"><b>Mode de paiement :</b>${escapeHtml(payroll.payment_method || 'Virement bancaire')}</div>
                     <div class="row"><b></b></div>
-                    <div class="row"><b>Statut</b>${escapeHtml(statusLabel(payroll))}</div>
+                    <div class="row"><b>Statut :</b>${escapeHtml(statusLabel(payroll))}</div>
                 </div>
 
                 <table>
@@ -242,20 +246,20 @@ export const buildPayslipHtml = (payroll: Payroll): string => {
                 <div class="totals-strip">
                     <div class="box">
                         <b>Total gains</b>
-                        ${totalGain.toLocaleString('fr-FR')} FCFA
+                        ${formatCurrency(totalGain)}
                     </div>
                     <div class="box">
                         <b>Total retenues</b>
-                        ${totalRetenue.toLocaleString('fr-FR')} FCFA
+                        ${formatCurrency(totalRetenue)}
                     </div>
                     <div class="box net-box">
                         <b>Net à payer</b>
-                        <span class="net-amount">${Number(payroll.net_salary).toLocaleString('fr-FR')} FCFA</span>
+                        <span class="net-amount">${formatCurrency(Number(payroll.net_salary))}</span>
                     </div>
                 </div>
 
                 <div class="words">
-                    Montant en lettres : ${numberToFrenchWords(Math.round(payroll.net_salary))} francs CFA
+                    Montant en lettres : ${numberToFrenchWords(Math.round(Number(payroll.net_salary)))} francs CFA
                 </div>
 
                 <div class="footer">

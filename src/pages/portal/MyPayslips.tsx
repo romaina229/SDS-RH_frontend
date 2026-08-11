@@ -8,6 +8,11 @@ import type { Payroll } from '../../types';
 import toast from 'react-hot-toast';
 import { ArrowDownTrayIcon as DownloadIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 
+const formatCurrency = (value: number): string => {
+    if (!value || isNaN(value)) return '0 FCFA';
+    return Math.round(value).toLocaleString('fr-FR') + ' FCFA';
+};
+
 const statusLabel = (status: string): string => {
     const labels: Record<string, string> = {
         draft: 'Brouillon',
@@ -50,7 +55,7 @@ const MyPayslips: React.FC = () => {
             const response = await portal.payslip(id);
             const payroll: Payroll = response.data.payroll;
 
-            const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=900,height=1000');
+            const printWindow = window.open('', '_blank', 'width=900,height=1000');
             if (!printWindow) {
                 toast.error('Autorisez les fenêtres contextuelles pour imprimer le bulletin');
                 return;
@@ -59,7 +64,10 @@ const MyPayslips: React.FC = () => {
             printWindow.document.write(buildPayslipHtml(payroll));
             printWindow.document.close();
             printWindow.focus();
-            printWindow.onload = () => printWindow.print();
+            
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Erreur lors de la génération du bulletin');
         }
@@ -88,7 +96,7 @@ const MyPayslips: React.FC = () => {
                                     <div>
                                         <p className="font-medium text-gray-900">{payslip.month}</p>
                                         <p className="text-sm text-gray-500">
-                                            {Number(payslip.net_salary).toLocaleString()} FCFA net
+                                            {formatCurrency(Number(payslip.net_salary))}
                                         </p>
                                         <span
                                             className={`mt-1 inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${statusColor(

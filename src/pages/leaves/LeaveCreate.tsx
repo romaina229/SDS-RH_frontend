@@ -66,28 +66,43 @@ const LeaveCreate: React.FC = () => {
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     };
 
-    const onSubmit = async (data: LeaveFormData): Promise<void> => {
-        const days = calculateDays(data.start_date, data.end_date);
-        
-        // Vérifier le solde pour les congés annuels
-        if (data.type === 'annual' && balance) {
-            if (balance.annual_remaining < days) {
-                toast.error(`Solde insuffisant. Restant: ${balance.annual_remaining} jours`);
-                return;
-            }
-        }
+const { user } = useAuth();
 
-        setLoading(true);
-        try {
-            await axios.post('/leaves', { ...data, days });
-            toast.success('Demande de congé créée avec succès');
-            navigate('/leaves');
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Erreur lors de la création');
-        } finally {
-            setLoading(false);
+// Récupérer l'ID de l'employé
+const employeeId = user?.employee?.id || user?.employee;
+
+const onSubmit = async (data: LeaveFormData): Promise<void> => {
+    // Vérification initiale
+    if (!employeeId) {
+        toast.error('Vous devez être associé à un employé pour faire une demande');
+        return;
+    }
+
+    const days = calculateDays(data.start_date, data.end_date);
+    
+    if (data.type === 'annual' && balance) {
+        if (balance.annual_remaining < days) {
+            toast.error(`Solde insuffisant. Restant: ${balance.annual_remaining} jours`);
+            return;
         }
-    };
+    }
+
+    setLoading(true);
+    try {
+        await axios.post('/leaves', { 
+            ...data, 
+            days,
+            employee_id: employeeId
+        });
+        toast.success('Demande de congé créée avec succès');
+        navigate('/leaves');
+    } catch (error: any) {
+        console.log('Erreur détaillée:', error.response?.data);
+        toast.error(error.response?.data?.message || 'Erreur lors de la création');
+    } finally {
+        setLoading(false);
+    }
+};
 
     const days = calculateDays(startDate, endDate);
 

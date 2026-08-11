@@ -70,6 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     href: '/profile',
                     icon: UserCircleIcon,
                 },
+                { name: 'Mon espace', href: '/portal', icon: UsersIcon },
             ],
         },
         {
