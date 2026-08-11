@@ -24,7 +24,7 @@ const today = new Date().toLocaleDateString('fr-FR', {
     });
     
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, user }) => {
-    const { logout } = useAuth();
+    const { logout, isAdmin } = useAuth();
     const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState<boolean>(false);
     const { tenant } = useAuth();
@@ -96,13 +96,15 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, user }) => {
                                     <UserCircleIcon className="h-5 w-5 mr-2" />
                                     Mon profil
                                 </button>
-                                <button
-                                    onClick={() => navigate('/settings')}
-                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                >
-                                    <Cog6ToothIcon className="h-5 w-5 mr-2" />
-                                    Paramètres
-                                </button>
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => navigate('/settings')}
+                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                    >
+                                        <Cog6ToothIcon className="h-5 w-5 mr-2" />
+                                        Paramètres
+                                    </button>
+                                )}
                                 <hr className="my-1" />
                                 <button
                                     onClick={handleLogout}

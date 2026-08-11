@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import { portal } from '../../api/portal';
@@ -78,55 +77,53 @@ const MyPayslips: React.FC = () => {
     }
 
     return (
-        <Layout>
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Mes bulletins de paie</h1>
-                    <p className="text-gray-500 mt-1">Consultez et imprimez l'historique de vos bulletins</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {payslips.map((payslip) => (
-                        <Card key={payslip.id} className="hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-start space-x-3">
-                                    <div className="p-2 bg-primary-50 rounded-lg">
-                                        <CurrencyDollarIcon className="h-6 w-6 text-primary-600" />
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900">{payslip.month}</p>
-                                        <p className="text-sm text-gray-500">
-                                            {formatCurrency(Number(payslip.net_salary))}
-                                        </p>
-                                        <span
-                                            className={`mt-1 inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${statusColor(
-                                                payslip.status
-                                            )}`}
-                                        >
-                                            {statusLabel(payslip.status)}
-                                        </span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => printPayslip(payslip.id)}
-                                    className="p-1 text-primary-600 hover:text-primary-900"
-                                    title="Imprimer / télécharger"
-                                >
-                                    <DownloadIcon className="h-5 w-5" />
-                                </button>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-
-                {payslips.length === 0 && (
-                    <div className="text-center py-12">
-                        <CurrencyDollarIcon className="h-12 w-12 text-gray-400 mx-auto" />
-                        <p className="mt-2 text-gray-500">Aucun bulletin de paie disponible pour le moment</p>
-                    </div>
-                )}
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Mes bulletins de paie</h1>
+                <p className="text-gray-500 mt-1">Consultez et imprimez l'historique de vos bulletins</p>
             </div>
-        </Layout>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {payslips.map((payslip) => (
+                    <Card key={payslip.id} className="hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-start space-x-3">
+                                <div className="p-2 bg-primary-50 rounded-lg">
+                                    <CurrencyDollarIcon className="h-6 w-6 text-primary-600" />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-gray-900">{payslip.month}</p>
+                                    <p className="text-sm text-gray-500">
+                                        {formatCurrency(Number(payslip.net_salary))}
+                                    </p>
+                                    <span
+                                        className={`mt-1 inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${statusColor(
+                                            payslip.status
+                                        )}`}
+                                    >
+                                        {statusLabel(payslip.status)}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => printPayslip(payslip.id)}
+                                className="p-1 text-primary-600 hover:text-primary-900"
+                                title="Imprimer / télécharger"
+                            >
+                                <DownloadIcon className="h-5 w-5" />
+                            </button>
+                        </div>
+                    </Card>
+                ))}
+            </div>
+
+            {payslips.length === 0 && (
+                <div className="text-center py-12">
+                    <CurrencyDollarIcon className="h-12 w-12 text-gray-400 mx-auto" />
+                    <p className="mt-2 text-gray-500">Aucun bulletin de paie disponible pour le moment</p>
+                </div>
+            )}
+        </div>
     );
 };
 

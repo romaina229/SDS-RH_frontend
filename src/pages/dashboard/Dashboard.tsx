@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import Layout from '../../components/common/Layout';
 import Loading from '../../components/common/Loading';
 import StatsCards from '../../components/dashboard/StatsCards';
 import DepartmentChart from '../../components/dashboard/DepartmentChart';
@@ -50,30 +49,28 @@ const Dashboard: React.FC = () => {
     }
 
     return (
-        <Layout>
-            <div className="space-y-6">
-                
-                {/* AJOUT : bandeau avec le nom de l'organisation connectée */}
-                <OrganizationBanner />
-                
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Bonjour, {user?.first_name} 👋
-                    </h1>
-                    <p className="text-gray-500 mt-1">
-                        Voici un résumé de votre activité RH
-                    </p>
-                    </div>
-                <StatsCards stats={data.stats} />
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <DepartmentChart data={data.department_distribution} />
-                    <HiringTrend data={data.hiring_trend} />
+        <div className="space-y-6">
+            
+            {/* AJOUT : bandeau avec le nom de l'organisation connectée */}
+            <OrganizationBanner />
+            
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                    Bonjour, {user?.first_name} 👋
+                </h1>
+                <p className="text-gray-500 mt-1">
+                    Voici un résumé de votre activité RH
+                </p>
                 </div>
+            <StatsCards stats={data.stats} />
 
-                <RecentActivities activities={data.recent_activities} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <DepartmentChart data={data.department_distribution} />
+                <HiringTrend data={data.hiring_trend} />
             </div>
-        </Layout>
+
+            <RecentActivities activities={data.recent_activities} />
+        </div>
     );
 };
 

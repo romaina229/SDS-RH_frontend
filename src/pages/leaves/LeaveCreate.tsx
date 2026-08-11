@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../context/AuthContext';
@@ -107,124 +106,122 @@ const onSubmit = async (data: LeaveFormData): Promise<void> => {
     const days = calculateDays(startDate, endDate);
 
     return (
-        <Layout>
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Demander un congé</h1>
-                    <p className="text-gray-500 mt-1">Soumettez une demande de congé</p>
-                </div>
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Demander un congé</h1>
+                <p className="text-gray-500 mt-1">Soumettez une demande de congé</p>
+            </div>
 
-                <Card>
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {(isAdmin || isManager) && (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">Employé *</label>
-                                    <select
-                                        {...register('employee_id', { required: 'Veuillez sélectionner un employé' })}
-                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                    >
-                                        <option value="">Sélectionner un employé</option>
-                                        {employees.map((emp) => (
-                                            <option key={emp.id} value={emp.id}>
-                                                {emp.user?.first_name} {emp.user?.last_name} ({emp.employee_number})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.employee_id && (
-                                        <p className="text-danger-500 text-xs mt-1">{errors.employee_id.message}</p>
-                                    )}
-                                </div>
-                            )}
-
+            <Card>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {(isAdmin || isManager) && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Type de congé *</label>
+                                <label className="block text-sm font-medium text-gray-700">Employé *</label>
                                 <select
-                                    {...register('type', { required: 'Veuillez sélectionner un type' })}
+                                    {...register('employee_id', { required: 'Veuillez sélectionner un employé' })}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                 >
-                                    <option value="">Sélectionner</option>
-                                    <option value="annual">Annuel</option>
-                                    <option value="sick">Maladie</option>
-                                    <option value="maternity">Maternité</option>
-                                    <option value="paternity">Paternité</option>
-                                    <option value="exceptional">Exceptionnel</option>
-                                    <option value="unpaid">Sans solde</option>
-                                    <option value="training">Formation</option>
+                                    <option value="">Sélectionner un employé</option>
+                                    {employees.map((emp) => (
+                                        <option key={emp.id} value={emp.id}>
+                                            {emp.user?.first_name} {emp.user?.last_name} ({emp.employee_number})
+                                        </option>
+                                    ))}
                                 </select>
-                                {errors.type && (
-                                    <p className="text-danger-500 text-xs mt-1">{errors.type.message}</p>
+                                {errors.employee_id && (
+                                    <p className="text-danger-500 text-xs mt-1">{errors.employee_id.message}</p>
                                 )}
                             </div>
+                        )}
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Date de début *</label>
-                                <input
-                                    {...register('start_date', { required: 'La date de début est requise' })}
-                                    type="date"
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                />
-                                {errors.start_date && (
-                                    <p className="text-danger-500 text-xs mt-1">{errors.start_date.message}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Date de fin *</label>
-                                <input
-                                    {...register('end_date', { required: 'La date de fin est requise' })}
-                                    type="date"
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                />
-                                {errors.end_date && (
-                                    <p className="text-danger-500 text-xs mt-1">{errors.end_date.message}</p>
-                                )}
-                            </div>
-
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700">Motif</label>
-                                <textarea
-                                    {...register('reason')}
-                                    rows={3}
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                    placeholder="Expliquez brièvement le motif de votre demande..."
-                                />
-                            </div>
-
-                            {days > 0 && (
-                                <div className="col-span-2 bg-gray-50 rounded-lg p-4">
-                                    <p className="text-sm text-gray-600">
-                                        <span className="font-medium">{days}</span> jour(s) de congé demandé(s)
-                                    </p>
-                                    {balance && (
-                                        <p className="text-sm text-gray-600 mt-1">
-                                            Solde restant: <span className="font-medium">{balance.annual_remaining}</span> jours
-                                        </p>
-                                    )}
-                                </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Type de congé *</label>
+                            <select
+                                {...register('type', { required: 'Veuillez sélectionner un type' })}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            >
+                                <option value="">Sélectionner</option>
+                                <option value="annual">Annuel</option>
+                                <option value="sick">Maladie</option>
+                                <option value="maternity">Maternité</option>
+                                <option value="paternity">Paternité</option>
+                                <option value="exceptional">Exceptionnel</option>
+                                <option value="unpaid">Sans solde</option>
+                                <option value="training">Formation</option>
+                            </select>
+                            {errors.type && (
+                                <p className="text-danger-500 text-xs mt-1">{errors.type.message}</p>
                             )}
                         </div>
 
-                        <div className="flex justify-end space-x-3 pt-6 border-t">
-                            <button
-                                type="button"
-                                onClick={() => navigate('/leaves')}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                            >
-                                Annuler
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading ? 'Envoi...' : 'Soumettre la demande'}
-                            </button>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Date de début *</label>
+                            <input
+                                {...register('start_date', { required: 'La date de début est requise' })}
+                                type="date"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            />
+                            {errors.start_date && (
+                                <p className="text-danger-500 text-xs mt-1">{errors.start_date.message}</p>
+                            )}
                         </div>
-                    </form>
-                </Card>
-            </div>
-        </Layout>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Date de fin *</label>
+                            <input
+                                {...register('end_date', { required: 'La date de fin est requise' })}
+                                type="date"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            />
+                            {errors.end_date && (
+                                <p className="text-danger-500 text-xs mt-1">{errors.end_date.message}</p>
+                            )}
+                        </div>
+
+                        <div className="col-span-2">
+                            <label className="block text-sm font-medium text-gray-700">Motif</label>
+                            <textarea
+                                {...register('reason')}
+                                rows={3}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                placeholder="Expliquez brièvement le motif de votre demande..."
+                            />
+                        </div>
+
+                        {days > 0 && (
+                            <div className="col-span-2 bg-gray-50 rounded-lg p-4">
+                                <p className="text-sm text-gray-600">
+                                    <span className="font-medium">{days}</span> jour(s) de congé demandé(s)
+                                </p>
+                                {balance && (
+                                    <p className="text-sm text-gray-600 mt-1">
+                                        Solde restant: <span className="font-medium">{balance.annual_remaining}</span> jours
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex justify-end space-x-3 pt-6 border-t">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/leaves')}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading ? 'Envoi...' : 'Soumettre la demande'}
+                        </button>
+                    </div>
+                </form>
+            </Card>
+        </div>
     );
 };
 

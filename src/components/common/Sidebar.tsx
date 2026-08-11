@@ -16,6 +16,7 @@ import {
     FolderIcon,
     BuildingOffice2Icon,
     BellIcon,
+    TrophyIcon,
     DocumentCurrencyYenIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
@@ -100,6 +101,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     icon: DocumentTextIcon,
                     permission: 'view_contracts',
                 },
+                {
+                    name: 'Performances',
+                    href: '/performances',
+                    icon: TrophyIcon,
+                    permission: 'view_performances',
+                }
             ],
         },
         {

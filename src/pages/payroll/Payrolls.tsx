@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import { useAuth } from '../../context/AuthContext';
@@ -227,331 +226,329 @@ const Payrolls: React.FC = () => {
     };
 
     return (
-        <Layout>
-            <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Paie</h1>
-                        <p className="text-gray-500 mt-1">Gestion des salaires et bulletins de paie</p>
-                    </div>
-                    <div className="flex items-center space-x-3 mt-4 sm:mt-0">
-                        <input
-                            type="month"
-                            value={month}
-                            onChange={(e) => setMonth(e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                        />
-                        {hasPermission('process_payrolls') && (
-                            <>
-                                <button
-                                    onClick={() => {
-                                        setShowAdjustments(!showAdjustments);
-                                        if (!showAdjustments) {
-                                            fetchPreparedPayrolls();
-                                        }
-                                    }}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
-                                >
-                                    {showAdjustments ? 'Voir la paie' : 'Ajustements'}
-                                </button>
-                                <button
-                                    onClick={showAdjustments ? validateAndProcess : processPayroll}
-                                    disabled={processing}
-                                    className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm font-medium disabled:opacity-50"
-                                >
-                                    {processing ? 'Traitement...' : (showAdjustments ? 'Valider et traiter' : 'Traiter la paie')}
-                                </button>
-                            </>
-                        )}
-                    </div>
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Paie</h1>
+                    <p className="text-gray-500 mt-1">Gestion des salaires et bulletins de paie</p>
                 </div>
+                <div className="flex items-center space-x-3 mt-4 sm:mt-0">
+                    <input
+                        type="month"
+                        value={month}
+                        onChange={(e) => setMonth(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    />
+                    {hasPermission('process_payrolls') && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    setShowAdjustments(!showAdjustments);
+                                    if (!showAdjustments) {
+                                        fetchPreparedPayrolls();
+                                    }
+                                }}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+                            >
+                                {showAdjustments ? 'Voir la paie' : 'Ajustements'}
+                            </button>
+                            <button
+                                onClick={showAdjustments ? validateAndProcess : processPayroll}
+                                disabled={processing}
+                                className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-sm font-medium disabled:opacity-50"
+                            >
+                                {processing ? 'Traitement...' : (showAdjustments ? 'Valider et traiter' : 'Traiter la paie')}
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
 
-                {showAdjustments ? (
-                    // Vue avec ajustements
-                    <div className="space-y-4">
-                        <Card>
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-semibold">Ajustements individuels</h3>
-                                <span className="text-sm text-gray-500">
-                                    {preparedPayrolls.length} employés · {formatCurrency(preparedPayrolls.reduce((sum, p) => sum + (Number(p.net_salary) || 0), 0))}
-                                </span>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead>
-                                        <tr>
-                                            <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Employé</th>
-                                            <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Salaire base</th>
-                                            <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Heures sup.</th>
-                                            <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Primes</th>
-                                            <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Déduc. supp.</th>
-                                            <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Net estimé</th>
-                                            <th className="px-4 py-2 bg-gray-50 text-center text-xs font-medium text-gray-500">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {preparedPayrolls.map((emp) => {
-                                            const adj = adjustments[emp.employee_id] || { overtime_hours: 0, bonuses: 0, additional_deductions: 0 };
-                                            const netEstime = calculateNetSalary(emp, adj);
-                                            const isEditing = editingEmployee === emp.employee_id;
-                                            
-                                            return (
-                                                <tr key={emp.employee_id} className="hover:bg-gray-50">
-                                                    <td className="px-4 py-2 whitespace-nowrap">
-                                                        <div className="text-sm font-medium">
-                                                            {emp.employee.user?.first_name} {emp.employee.user?.last_name}
-                                                        </div>
-                                                        <div className="text-xs text-gray-500">
-                                                            {emp.employee.employee_number}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-2 whitespace-nowrap text-sm">
-                                                        {formatCurrency(emp.base_salary)}
-                                                    </td>
-                                                    <td className="px-4 py-2 whitespace-nowrap">
-                                                        {isEditing ? (
-                                                            <input
-                                                                type="number"
-                                                                min="0"
-                                                                step="0.5"
-                                                                value={adj.overtime_hours || 0}
-                                                                onChange={(e) => handleAdjustmentChange(emp.employee_id, 'overtime_hours', parseFloat(e.target.value) || 0)}
-                                                                className="w-20 px-2 py-1 border rounded text-sm"
-                                                            />
-                                                        ) : (
-                                                            <span className="text-sm">{adj.overtime_hours || 0}h</span>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-2 whitespace-nowrap">
-                                                        {isEditing ? (
-                                                            <input
-                                                                type="number"
-                                                                min="0"
-                                                                step="1000"
-                                                                value={adj.bonuses || 0}
-                                                                onChange={(e) => handleAdjustmentChange(emp.employee_id, 'bonuses', parseFloat(e.target.value) || 0)}
-                                                                className="w-24 px-2 py-1 border rounded text-sm"
-                                                            />
-                                                        ) : (
-                                                            <span className="text-sm text-green-600">
-                                                                +{formatCurrency(adj.bonuses || 0)}
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-2 whitespace-nowrap">
-                                                        {isEditing ? (
-                                                            <input
-                                                                type="number"
-                                                                min="0"
-                                                                step="1000"
-                                                                value={adj.additional_deductions || 0}
-                                                                onChange={(e) => handleAdjustmentChange(emp.employee_id, 'additional_deductions', parseFloat(e.target.value) || 0)}
-                                                                className="w-24 px-2 py-1 border rounded text-sm"
-                                                            />
-                                                        ) : (
-                                                            <span className="text-sm text-red-600">
-                                                                -{formatCurrency(adj.additional_deductions || 0)}
-                                                            </span>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-2 whitespace-nowrap font-semibold text-primary-600">
-                                                        {formatCurrency(netEstime)}
-                                                    </td>
-                                                    <td className="px-4 py-2 whitespace-nowrap text-center">
-                                                        {isEditing ? (
-                                                            <button
-                                                                onClick={() => setEditingEmployee(null)}
-                                                                className="text-green-600 hover:text-green-800"
-                                                            >
-                                                                <CheckIcon className="h-5 w-5" />
-                                                            </button>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => setEditingEmployee(emp.employee_id)}
-                                                                className="text-blue-600 hover:text-blue-800"
-                                                            >
-                                                                <PencilIcon className="h-5 w-5" />
-                                                            </button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                                {/* PAGINATION */}
-                                {pagination.total > pagination.per_page && (
-                                    <div className="flex items-center justify-between px-6 py-3 bg-gray-50 border-t border-gray-200">
-                                        <div className="flex-1 flex justify-between sm:hidden">
-                                            <button
-                                                onClick={() => handlePageChange(pagination.current_page - 1)}
-                                                disabled={pagination.current_page === 1}
-                                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                                            >
-                                                Précédent
-                                            </button>
-                                            <button
-                                                onClick={() => handlePageChange(pagination.current_page + 1)}
-                                                disabled={pagination.current_page === pagination.last_page}
-                                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-                                            >
-                                                Suivant
-                                            </button>
-                                        </div>
-                                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                                            <div>
-                                                <p className="text-sm text-gray-700">
-                                                    Affichage de <span className="font-medium">{((pagination.current_page - 1) * pagination.per_page) + 1}</span> à{' '}
-                                                    <span className="font-medium">{Math.min(pagination.current_page * pagination.per_page, pagination.total)}</span> sur{' '}
-                                                    <span className="font-medium">{pagination.total}</span> résultats
-                                                </p>
-                                            </div>
-                                            <div className="flex space-x-1">
-                                                <button
-                                                    onClick={() => handlePageChange(1)}
-                                                    disabled={pagination.current_page === 1}
-                                                    className="px-3 py-1 text-sm rounded-md bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 disabled:opacity-50"
-                                                >
-                                                    Première
-                                                </button>
-                                                {[...Array(Math.min(pagination.last_page, 10))].map((_, i) => {
-                                                    const page = i + 1;
-                                                    return (
-                                                        <button
-                                                            key={page}
-                                                            onClick={() => handlePageChange(page)}
-                                                            className={`px-3 py-1 text-sm rounded-md ${
-                                                                pagination.current_page === page
-                                                                    ? 'bg-primary-600 text-white'
-                                                                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-                                                            }`}
-                                                        >
-                                                            {page}
-                                                        </button>
-                                                    );
-                                                })}
-                                                {pagination.last_page > 10 && (
-                                                    <span className="px-3 py-1 text-sm text-gray-500">...</span>
-                                                )}
-                                                <button
-                                                    onClick={() => handlePageChange(pagination.last_page)}
-                                                    disabled={pagination.current_page === pagination.last_page}
-                                                    className="px-3 py-1 text-sm rounded-md bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 disabled:opacity-50"
-                                                >
-                                                    Dernière
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                        </Card>
-                    </div>
-                ) : (
-                    // Vue standard de la paie
-                    <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Card>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Total</p>
-                                        <p className="text-2xl font-bold text-gray-900">{payrolls.length}</p>
-                                    </div>
-                                    <CurrencyDollarIcon className="h-8 w-8 text-gray-400" />
-                                </div>
-                            </Card>
-                            <Card>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Masse salariale</p>
-                                        <p className="text-2xl font-bold text-gray-900">
-                                            {payrolls.length > 0 
-                                                ? formatCurrency(payrolls.reduce((sum, p) => sum + (Number(p.net_salary) || 0), 0))
-                                                : '0 FCFA'
-                                            }
-                                        </p>
-                                    </div>
-                                    <CurrencyDollarIcon className="h-8 w-8 text-green-400" />
-                                </div>
-                            </Card>
-                            <Card>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Payés</p>
-                                        <p className="text-2xl font-bold text-gray-900">
-                                            {payrolls.filter(p => p.status === 'paid').length}/{payrolls.length || 0}
-                                        </p>
-                                    </div>
-                                    <CheckIcon className="h-8 w-8 text-blue-400" />
-                                </div>
-                            </Card>
+            {showAdjustments ? (
+                // Vue avec ajustements
+                <div className="space-y-4">
+                    <Card>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold">Ajustements individuels</h3>
+                            <span className="text-sm text-gray-500">
+                                {preparedPayrolls.length} employés · {formatCurrency(preparedPayrolls.reduce((sum, p) => sum + (Number(p.net_salary) || 0), 0))}
+                            </span>
                         </div>
-
-                        <Card>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead>
-                                        <tr>
-                                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employé</th>
-                                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salaire de base</th>
-                                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Primes</th>
-                                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Déductions</th>
-                                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Net</th>
-                                            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                                            <th className="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {payrolls.map((payroll) => (
-                                            <tr key={payroll.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {payroll.employee?.user?.first_name} {payroll.employee?.user?.last_name}
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Employé</th>
+                                        <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Salaire base</th>
+                                        <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Heures sup.</th>
+                                        <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Primes</th>
+                                        <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Déduc. supp.</th>
+                                        <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500">Net estimé</th>
+                                        <th className="px-4 py-2 bg-gray-50 text-center text-xs font-medium text-gray-500">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {preparedPayrolls.map((emp) => {
+                                        const adj = adjustments[emp.employee_id] || { overtime_hours: 0, bonuses: 0, additional_deductions: 0 };
+                                        const netEstime = calculateNetSalary(emp, adj);
+                                        const isEditing = editingEmployee === emp.employee_id;
+                                        
+                                        return (
+                                            <tr key={emp.employee_id} className="hover:bg-gray-50">
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <div className="text-sm font-medium">
+                                                        {emp.employee.user?.first_name} {emp.employee.user?.last_name}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {emp.employee.employee_number}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {formatCurrency(payroll.base_salary)}
+                                                <td className="px-4 py-2 whitespace-nowrap text-sm">
+                                                    {formatCurrency(emp.base_salary)}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
-                                                    +{formatCurrency(payroll.bonuses)}
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.5"
+                                                            value={adj.overtime_hours || 0}
+                                                            onChange={(e) => handleAdjustmentChange(emp.employee_id, 'overtime_hours', parseFloat(e.target.value) || 0)}
+                                                            className="w-20 px-2 py-1 border rounded text-sm"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-sm">{adj.overtime_hours || 0}h</span>
+                                                    )}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                                                    -{formatCurrency(payroll.deductions)}
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="1000"
+                                                            value={adj.bonuses || 0}
+                                                            onChange={(e) => handleAdjustmentChange(emp.employee_id, 'bonuses', parseFloat(e.target.value) || 0)}
+                                                            className="w-24 px-2 py-1 border rounded text-sm"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-sm text-green-600">
+                                                            +{formatCurrency(adj.bonuses || 0)}
+                                                        </span>
+                                                    )}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                                    {formatCurrency(payroll.net_salary)}
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="1000"
+                                                            value={adj.additional_deductions || 0}
+                                                            onChange={(e) => handleAdjustmentChange(emp.employee_id, 'additional_deductions', parseFloat(e.target.value) || 0)}
+                                                            className="w-24 px-2 py-1 border rounded text-sm"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-sm text-red-600">
+                                                            -{formatCurrency(adj.additional_deductions || 0)}
+                                                        </span>
+                                                    )}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(payroll.status)}`}>
-                                                        {getStatusLabel(payroll.status)}
-                                                    </span>
+                                                <td className="px-4 py-2 whitespace-nowrap font-semibold text-primary-600">
+                                                    {formatCurrency(netEstime)}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <button
-                                                        onClick={() => downloadPayslip(payroll.id)}
-                                                        className="text-blue-600 hover:text-blue-900 mr-3"
-                                                    >
-                                                        <DownloadIcon className="h-5 w-5" />
-                                                    </button>
-                                                    {payroll.status === 'processed' && hasPermission('process_payrolls') && (
+                                                <td className="px-4 py-2 whitespace-nowrap text-center">
+                                                    {isEditing ? (
                                                         <button
-                                                            onClick={() => handlePay(payroll.id)}
-                                                            className="text-green-600 hover:text-green-900"
+                                                            onClick={() => setEditingEmployee(null)}
+                                                            className="text-green-600 hover:text-green-800"
                                                         >
                                                             <CheckIcon className="h-5 w-5" />
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => setEditingEmployee(emp.employee_id)}
+                                                            className="text-blue-600 hover:text-blue-800"
+                                                        >
+                                                            <PencilIcon className="h-5 w-5" />
                                                         </button>
                                                     )}
                                                 </td>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                            {/* PAGINATION */}
+                            {pagination.total > pagination.per_page && (
+                                <div className="flex items-center justify-between px-6 py-3 bg-gray-50 border-t border-gray-200">
+                                    <div className="flex-1 flex justify-between sm:hidden">
+                                        <button
+                                            onClick={() => handlePageChange(pagination.current_page - 1)}
+                                            disabled={pagination.current_page === 1}
+                                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                                        >
+                                            Précédent
+                                        </button>
+                                        <button
+                                            onClick={() => handlePageChange(pagination.current_page + 1)}
+                                            disabled={pagination.current_page === pagination.last_page}
+                                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                                        >
+                                            Suivant
+                                        </button>
+                                    </div>
+                                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="text-sm text-gray-700">
+                                                Affichage de <span className="font-medium">{((pagination.current_page - 1) * pagination.per_page) + 1}</span> à{' '}
+                                                <span className="font-medium">{Math.min(pagination.current_page * pagination.per_page, pagination.total)}</span> sur{' '}
+                                                <span className="font-medium">{pagination.total}</span> résultats
+                                            </p>
+                                        </div>
+                                        <div className="flex space-x-1">
+                                            <button
+                                                onClick={() => handlePageChange(1)}
+                                                disabled={pagination.current_page === 1}
+                                                className="px-3 py-1 text-sm rounded-md bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 disabled:opacity-50"
+                                            >
+                                                Première
+                                            </button>
+                                            {[...Array(Math.min(pagination.last_page, 10))].map((_, i) => {
+                                                const page = i + 1;
+                                                return (
+                                                    <button
+                                                        key={page}
+                                                        onClick={() => handlePageChange(page)}
+                                                        className={`px-3 py-1 text-sm rounded-md ${
+                                                            pagination.current_page === page
+                                                                ? 'bg-primary-600 text-white'
+                                                                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                                                        }`}
+                                                    >
+                                                        {page}
+                                                    </button>
+                                                );
+                                            })}
+                                            {pagination.last_page > 10 && (
+                                                <span className="px-3 py-1 text-sm text-gray-500">...</span>
+                                            )}
+                                            <button
+                                                onClick={() => handlePageChange(pagination.last_page)}
+                                                disabled={pagination.current_page === pagination.last_page}
+                                                className="px-3 py-1 text-sm rounded-md bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 disabled:opacity-50"
+                                            >
+                                                Dernière
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                    </Card>
+                </div>
+            ) : (
+                // Vue standard de la paie
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-500">Total</p>
+                                    <p className="text-2xl font-bold text-gray-900">{payrolls.length}</p>
+                                </div>
+                                <CurrencyDollarIcon className="h-8 w-8 text-gray-400" />
                             </div>
                         </Card>
-                    </>
-                )}
-            </div>
-        </Layout>
+                        <Card>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-500">Masse salariale</p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {payrolls.length > 0 
+                                            ? formatCurrency(payrolls.reduce((sum, p) => sum + (Number(p.net_salary) || 0), 0))
+                                            : '0 FCFA'
+                                        }
+                                    </p>
+                                </div>
+                                <CurrencyDollarIcon className="h-8 w-8 text-green-400" />
+                            </div>
+                        </Card>
+                        <Card>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-500">Payés</p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {payrolls.filter(p => p.status === 'paid').length}/{payrolls.length || 0}
+                                    </p>
+                                </div>
+                                <CheckIcon className="h-8 w-8 text-blue-400" />
+                            </div>
+                        </Card>
+                    </div>
+
+                    <Card>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employé</th>
+                                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salaire de base</th>
+                                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Primes</th>
+                                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Déductions</th>
+                                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Net</th>
+                                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                                        <th className="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {payrolls.map((payroll) => (
+                                        <tr key={payroll.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    {payroll.employee?.user?.first_name} {payroll.employee?.user?.last_name}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {formatCurrency(payroll.base_salary)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
+                                                +{formatCurrency(payroll.bonuses)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
+                                                -{formatCurrency(payroll.deductions)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                                                {formatCurrency(payroll.net_salary)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(payroll.status)}`}>
+                                                    {getStatusLabel(payroll.status)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() => downloadPayslip(payroll.id)}
+                                                    className="text-blue-600 hover:text-blue-900 mr-3"
+                                                >
+                                                    <DownloadIcon className="h-5 w-5" />
+                                                </button>
+                                                {payroll.status === 'processed' && hasPermission('process_payrolls') && (
+                                                    <button
+                                                        onClick={() => handlePay(payroll.id)}
+                                                        className="text-green-600 hover:text-green-900"
+                                                    >
+                                                        <CheckIcon className="h-5 w-5" />
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+                </>
+            )}
+        </div>
     );
 };
 

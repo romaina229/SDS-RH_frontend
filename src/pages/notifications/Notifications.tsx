@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import { notifications } from '../../api/notifications';
@@ -192,190 +191,188 @@ const Notifications: React.FC = () => {
     }
 
     return (
-        <Layout>
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-                        <p className="text-gray-500 mt-1">
-                            {unreadCount} non lue(s) · {readCount} lue(s)
-                        </p>
-                    </div>
-                    <div className="flex items-center space-x-3">
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+                    <p className="text-gray-500 mt-1">
+                        {unreadCount} non lue(s) · {readCount} lue(s)
+                    </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                    {unreadCount > 0 && (
+                        <button
+                            onClick={handleMarkAllAsRead}
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+                        >
+                            <CheckIcon className="h-4 w-4 mr-2" />
+                            Tout marquer lu
+                        </button>
+                    )}
+                    {notificationsList.length > 0 && (
+                        <button
+                            onClick={handleDeleteAll}
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                        >
+                            <TrashIcon className="h-4 w-4 mr-2" />
+                            Supprimer tout
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            <Card>
+                <div className="flex items-center space-x-2 mb-4 border-b border-gray-200 pb-4">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                            filter === 'all'
+                                ? 'bg-primary-600 text-white'
+                                : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                    >
+                        Toutes
+                    </button>
+                    <button
+                        onClick={() => setFilter('unread')}
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                            filter === 'unread'
+                                ? 'bg-primary-600 text-white'
+                                : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                    >
+                        Non lues
                         {unreadCount > 0 && (
-                            <button
-                                onClick={handleMarkAllAsRead}
-                                className="inline-flex items-center px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
-                            >
-                                <CheckIcon className="h-4 w-4 mr-2" />
-                                Tout marquer lu
-                            </button>
+                            <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                {unreadCount}
+                            </span>
                         )}
-                        {notificationsList.length > 0 && (
-                            <button
-                                onClick={handleDeleteAll}
-                                className="inline-flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                            >
-                                <TrashIcon className="h-4 w-4 mr-2" />
-                                Supprimer tout
-                            </button>
-                        )}
-                    </div>
+                    </button>
+                    <button
+                        onClick={() => setFilter('read')}
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                            filter === 'read'
+                                ? 'bg-primary-600 text-white'
+                                : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                    >
+                        Lues
+                    </button>
                 </div>
 
-                <Card>
-                    <div className="flex items-center space-x-2 mb-4 border-b border-gray-200 pb-4">
-                        <button
-                            onClick={() => setFilter('all')}
-                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                                filter === 'all'
-                                    ? 'bg-primary-600 text-white'
-                                    : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                        >
-                            Toutes
-                        </button>
-                        <button
-                            onClick={() => setFilter('unread')}
-                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                                filter === 'unread'
-                                    ? 'bg-primary-600 text-white'
-                                    : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                        >
-                            Non lues
-                            {unreadCount > 0 && (
-                                <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                    {unreadCount}
-                                </span>
-                            )}
-                        </button>
-                        <button
-                            onClick={() => setFilter('read')}
-                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                                filter === 'read'
-                                    ? 'bg-primary-600 text-white'
-                                    : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                        >
-                            Lues
-                        </button>
+                {notificationsList.length === 0 ? (
+                    <div className="text-center py-12">
+                        <BellIcon className="h-16 w-16 text-gray-300 mx-auto" />
+                        <p className="mt-4 text-gray-500 text-lg">Aucune notification</p>
+                        <p className="text-sm text-gray-400">Vous êtes à jour !</p>
                     </div>
+                ) : (
+                    <div className="space-y-3">
+                        {notificationsList.map((notification) => {
+                            const Icon = getTypeIcon(notification.type);
+                            const colorClass = getTypeColor(notification.type);
+                            const isUnread = notification.status === 'unread';
 
-                    {notificationsList.length === 0 ? (
-                        <div className="text-center py-12">
-                            <BellIcon className="h-16 w-16 text-gray-300 mx-auto" />
-                            <p className="mt-4 text-gray-500 text-lg">Aucune notification</p>
-                            <p className="text-sm text-gray-400">Vous êtes à jour !</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {notificationsList.map((notification) => {
-                                const Icon = getTypeIcon(notification.type);
-                                const colorClass = getTypeColor(notification.type);
-                                const isUnread = notification.status === 'unread';
-
-                                return (
-                                    <div
-                                        key={notification.id}
-                                        className={`flex items-start justify-between p-4 rounded-xl border transition-all ${
-                                            isUnread
-                                                ? 'bg-blue-50/50 border-blue-200'
-                                                : 'bg-white border-gray-200 hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <div className="flex items-start space-x-4 flex-1">
-                                            <div className={`p-2.5 rounded-xl ${colorClass}`}>
-                                                <Icon className="h-5 w-5" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center space-x-2">
-                                                    <p className={`font-medium ${isUnread ? 'text-gray-900' : 'text-gray-700'}`}>
-                                                        {notification.title}
-                                                    </p>
-                                                    <span className="text-xs text-gray-400">
-                                                        {getTimeAgo(notification.created_at)}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-gray-500 mt-0.5">
-                                                    {notification.message}
-                                                </p>
-                                                <div className="flex items-center space-x-3 mt-2">
-                                                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                                        isUnread
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-gray-100 text-gray-500'
-                                                    }`}>
-                                                        {getTypeLabel(notification.type)}
-                                                    </span>
-                                                    {isUnread && (
-                                                        <span className="text-xs text-blue-600 font-medium">
-                                                            • Non lu
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
+                            return (
+                                <div
+                                    key={notification.id}
+                                    className={`flex items-start justify-between p-4 rounded-xl border transition-all ${
+                                        isUnread
+                                            ? 'bg-blue-50/50 border-blue-200'
+                                            : 'bg-white border-gray-200 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <div className="flex items-start space-x-4 flex-1">
+                                        <div className={`p-2.5 rounded-xl ${colorClass}`}>
+                                            <Icon className="h-5 w-5" />
                                         </div>
-                                        <div className="flex items-center space-x-1 ml-4">
-                                            {isUnread && (
-                                                <button
-                                                    onClick={() => handleMarkAsRead(notification.id)}
-                                                    className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="Marquer comme lu"
-                                                >
-                                                    <EyeIcon className="h-4 w-4" />
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => handleDelete(notification.id)}
-                                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="Supprimer"
-                                            >
-                                                <TrashIcon className="h-4 w-4" />
-                                            </button>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center space-x-2">
+                                                <p className={`font-medium ${isUnread ? 'text-gray-900' : 'text-gray-700'}`}>
+                                                    {notification.title}
+                                                </p>
+                                                <span className="text-xs text-gray-400">
+                                                    {getTimeAgo(notification.created_at)}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-500 mt-0.5">
+                                                {notification.message}
+                                            </p>
+                                            <div className="flex items-center space-x-3 mt-2">
+                                                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                                    isUnread
+                                                        ? 'bg-blue-100 text-blue-700'
+                                                        : 'bg-gray-100 text-gray-500'
+                                                }`}>
+                                                    {getTypeLabel(notification.type)}
+                                                </span>
+                                                {isUnread && (
+                                                    <span className="text-xs text-blue-600 font-medium">
+                                                        • Non lu
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                                    <div className="flex items-center space-x-1 ml-4">
+                                        {isUnread && (
+                                            <button
+                                                onClick={() => handleMarkAsRead(notification.id)}
+                                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                                                title="Marquer comme lu"
+                                            >
+                                                <EyeIcon className="h-4 w-4" />
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => handleDelete(notification.id)}
+                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            title="Supprimer"
+                                        >
+                                            <TrashIcon className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
 
-                    {pagination.total > pagination.per_page && (
-                        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
-                            <p className="text-sm text-gray-500">
-                                Affichage de {((pagination.current_page - 1) * pagination.per_page) + 1} à{' '}
-                                {Math.min(pagination.current_page * pagination.per_page, pagination.total)} sur{' '}
-                                {pagination.total} notifications
-                            </p>
-                            <div className="flex space-x-2">
-                                <button
-                                    onClick={() => {
-                                        if (pagination.current_page > 1) {
-                                            // fetch avec page - 1
-                                        }
-                                    }}
-                                    disabled={pagination.current_page === 1}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Précédent
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        if (pagination.current_page < pagination.last_page) {
-                                            // fetch avec page + 1
-                                        }
-                                    }}
-                                    disabled={pagination.current_page === pagination.last_page}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Suivant
-                                </button>
-                            </div>
+                {pagination.total > pagination.per_page && (
+                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                        <p className="text-sm text-gray-500">
+                            Affichage de {((pagination.current_page - 1) * pagination.per_page) + 1} à{' '}
+                            {Math.min(pagination.current_page * pagination.per_page, pagination.total)} sur{' '}
+                            {pagination.total} notifications
+                        </p>
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={() => {
+                                    if (pagination.current_page > 1) {
+                                        // fetch avec page - 1
+                                    }
+                                }}
+                                disabled={pagination.current_page === 1}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Précédent
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (pagination.current_page < pagination.last_page) {
+                                        // fetch avec page + 1
+                                    }
+                                }}
+                                disabled={pagination.current_page === pagination.last_page}
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Suivant
+                            </button>
                         </div>
-                    )}
-                </Card>
-            </div>
-        </Layout>
+                    </div>
+                )}
+            </Card>
+        </div>
     );
 };
 

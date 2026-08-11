@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import CareerTimeline from '../../components/employees/CareerTimeline';
@@ -32,24 +31,22 @@ const MyHistory: React.FC = () => {
     }
 
     return (
-        <Layout>
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <ClockIcon className="h-6 w-6 text-gray-400" />
-                        Mon parcours
-                    </h1>
-                    <p className="text-gray-500 mt-1">
-                        La chronologie de votre carrière au sein de l'organisation : embauche, mutations,
-                        promotions, changements de salaire et de contrat.
-                    </p>
-                </div>
-
-                <Card>
-                    <CareerTimeline history={history} />
-                </Card>
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <ClockIcon className="h-6 w-6 text-gray-400" />
+                    Mon parcours
+                </h1>
+                <p className="text-gray-500 mt-1">
+                    La chronologie de votre carrière au sein de l'organisation : embauche, mutations,
+                    promotions, changements de salaire et de contrat.
+                </p>
             </div>
-        </Layout>
+
+            <Card>
+                <CareerTimeline history={history} />
+            </Card>
+        </div>
     );
 };
 

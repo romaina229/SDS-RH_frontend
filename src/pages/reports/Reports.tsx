@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -167,139 +166,137 @@ const Reports: React.FC = () => {
 
 
     return (
-        <Layout>
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Rapports</h1>
-                    <p className="text-gray-500 mt-1">Génération de rapports RH</p>
-                </div>
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Rapports</h1>
+                <p className="text-gray-500 mt-1">Génération de rapports RH</p>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Sélection du rapport */}
-                    <Card>
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Type de rapport</h3>
-                        <div className="space-y-2">
-                            {reports.map((report) => {
-                                if (report.permission && !hasPermission(report.permission)) {
-                                    return null;
-                                }
-                                return (
-                                    <button
-                                        key={report.type}
-                                        onClick={() => setReportType(report.type as ReportType)}
-                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                                            reportType === report.type
-                                                ? 'bg-primary-50 text-primary-700 border border-primary-200'
-                                                : 'hover:bg-gray-50 text-gray-700'
-                                        }`}
-                                    >
-                                        <report.icon className="h-5 w-5" />
-                                        <span className="font-medium">{report.label}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </Card>
-
-                    {/* Paramètres */}
-                    <Card>
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">Paramètres</h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Date de début</label>
-                                <input
-                                    type="date"
-                                    value={dateRange.start_date}
-                                    onChange={(e) => setDateRange({...dateRange, start_date: e.target.value})}
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Date de fin</label>
-                                <input
-                                    type="date"
-                                    value={dateRange.end_date}
-                                    onChange={(e) => setDateRange({...dateRange, end_date: e.target.value})}
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Format</label>
-                                <div className="flex space-x-4 mt-1">
-                                    <label className="inline-flex items-center">
-                                        <input
-                                            type="radio"
-                                            value="pdf"
-                                            checked={format === 'pdf'}
-                                            onChange={() => setFormat('pdf')}
-                                            className="form-radio text-primary-600"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">PDF</span>
-                                    </label>
-                                    <label className="inline-flex items-center">
-                                        <input
-                                            type="radio"
-                                            value="excel"
-                                            checked={format === 'excel'}
-                                            onChange={() => setFormat('excel')}
-                                            className="form-radio text-primary-600"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">Excel (CSV)</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <button
-                                onClick={generateReport}
-                                disabled={loading}
-                                className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 flex items-center justify-center"
-                            >
-                                {loading ? (
-                                    <span className="flex items-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Génération en cours...
-                                    </span>
-                                ) : (
-                                    <span className="flex items-center">
-                                        <DocumentTextIcon className="h-5 w-5 mr-2" />
-                                        Générer le rapport
-                                    </span>
-                                )}
-                            </button>
-                        </div>
-                    </Card>
-                </div>
-
-                {/* Aperçu des rapports disponibles */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Sélection du rapport */}
                 <Card>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Rapports disponibles</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <UsersIcon className="h-8 w-8 text-primary-600 mb-2" />
-                            <h4 className="font-medium text-gray-900">Employés</h4>
-                            <p className="text-sm text-gray-500">Liste complète des employés</p>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Type de rapport</h3>
+                    <div className="space-y-2">
+                        {reports.map((report) => {
+                            if (report.permission && !hasPermission(report.permission)) {
+                                return null;
+                            }
+                            return (
+                                <button
+                                    key={report.type}
+                                    onClick={() => setReportType(report.type as ReportType)}
+                                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                                        reportType === report.type
+                                            ? 'bg-primary-50 text-primary-700 border border-primary-200'
+                                            : 'hover:bg-gray-50 text-gray-700'
+                                    }`}
+                                >
+                                    <report.icon className="h-5 w-5" />
+                                    <span className="font-medium">{report.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </Card>
+
+                {/* Paramètres */}
+                <Card>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Paramètres</h3>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Date de début</label>
+                            <input
+                                type="date"
+                                value={dateRange.start_date}
+                                onChange={(e) => setDateRange({...dateRange, start_date: e.target.value})}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            />
                         </div>
-                        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <CalendarIcon className="h-8 w-8 text-green-600 mb-2" />
-                            <h4 className="font-medium text-gray-900">Présences</h4>
-                            <p className="text-sm text-gray-500">Statistiques de présence</p>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Date de fin</label>
+                            <input
+                                type="date"
+                                value={dateRange.end_date}
+                                onChange={(e) => setDateRange({...dateRange, end_date: e.target.value})}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            />
                         </div>
-                        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <CurrencyDollarIcon className="h-8 w-8 text-purple-600 mb-2" />
-                            <h4 className="font-medium text-gray-900">Paie</h4>
-                            <p className="text-sm text-gray-500">Rapport des salaires</p>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Format</label>
+                            <div className="flex space-x-4 mt-1">
+                                <label className="inline-flex items-center">
+                                    <input
+                                        type="radio"
+                                        value="pdf"
+                                        checked={format === 'pdf'}
+                                        onChange={() => setFormat('pdf')}
+                                        className="form-radio text-primary-600"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-700">PDF</span>
+                                </label>
+                                <label className="inline-flex items-center">
+                                    <input
+                                        type="radio"
+                                        value="excel"
+                                        checked={format === 'excel'}
+                                        onChange={() => setFormat('excel')}
+                                        className="form-radio text-primary-600"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-700">Excel (CSV)</span>
+                                </label>
+                            </div>
                         </div>
-                        <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <ChartBarIcon className="h-8 w-8 text-yellow-600 mb-2" />
-                            <h4 className="font-medium text-gray-900">Congés</h4>
-                            <p className="text-sm text-gray-500">Analyse des congés</p>
-                        </div>
+                        <button
+                            onClick={generateReport}
+                            disabled={loading}
+                            className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 flex items-center justify-center"
+                        >
+                            {loading ? (
+                                <span className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Génération en cours...
+                                </span>
+                            ) : (
+                                <span className="flex items-center">
+                                    <DocumentTextIcon className="h-5 w-5 mr-2" />
+                                    Générer le rapport
+                                </span>
+                            )}
+                        </button>
                     </div>
                 </Card>
             </div>
-        </Layout>
+
+            {/* Aperçu des rapports disponibles */}
+            <Card>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Rapports disponibles</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <UsersIcon className="h-8 w-8 text-primary-600 mb-2" />
+                        <h4 className="font-medium text-gray-900">Employés</h4>
+                        <p className="text-sm text-gray-500">Liste complète des employés</p>
+                    </div>
+                    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <CalendarIcon className="h-8 w-8 text-green-600 mb-2" />
+                        <h4 className="font-medium text-gray-900">Présences</h4>
+                        <p className="text-sm text-gray-500">Statistiques de présence</p>
+                    </div>
+                    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <CurrencyDollarIcon className="h-8 w-8 text-purple-600 mb-2" />
+                        <h4 className="font-medium text-gray-900">Paie</h4>
+                        <p className="text-sm text-gray-500">Rapport des salaires</p>
+                    </div>
+                    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <ChartBarIcon className="h-8 w-8 text-yellow-600 mb-2" />
+                        <h4 className="font-medium text-gray-900">Congés</h4>
+                        <p className="text-sm text-gray-500">Analyse des congés</p>
+                    </div>
+                </div>
+            </Card>
+        </div>
     );
 };
 

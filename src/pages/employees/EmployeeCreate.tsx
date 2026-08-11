@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import { useForm } from 'react-hook-form';
@@ -129,184 +128,182 @@ const EmployeeCreate: React.FC = () => {
     }
 
     return (
-        <Layout>
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Nouvel employé</h1>
-                    <p className="text-gray-500 mt-1">Créer le dossier RH d'un nouvel employé</p>
-                </div>
-
-                <Card>
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="md:col-span-2">
-                                <h3 className="text-lg font-medium text-gray-900">Informations personnelles</h3>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Prénom *</label>
-                                <input {...register('first_name', { required: 'Le prénom est requis' })} type="text" className="field" />
-                                {errors.first_name && <p className="error">{errors.first_name.message}</p>}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Nom *</label>
-                                <input {...register('last_name', { required: 'Le nom est requis' })} type="text" className="field" />
-                                {errors.last_name && <p className="error">{errors.last_name.message}</p>}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Email *</label>
-                                <input
-                                    {...register('email', {
-                                        required: 'L email est requis',
-                                        pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Email invalide' },
-                                    })}
-                                    type="email"
-                                    className="field"
-                                />
-                                {errors.email && <p className="error">{errors.email.message}</p>}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Téléphone</label>
-                                <input {...register('phone')} type="tel" className="field" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Date d'embauche *
-                                </label>
-
-                                <input
-                                    {...register('hire_date', {
-                                        required: "La date d'embauche est requise"
-                                    })}
-                                    type="date"
-                                    className="field"
-                                />
-
-                                {errors.hire_date && (
-                                    <p className="error">{errors.hire_date.message}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Date de naissance</label>
-                                <input {...register('birth_date')} type="date" className="field" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Genre</label>
-                                <select {...register('gender')} className="field">
-                                    <option value="">Sélectionner</option>
-                                    <option value="male">Homme</option>
-                                    <option value="female">Femme</option>
-                                    <option value="other">Autre</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Situation matrimoniale</label>
-                                <select {...register('marital_status')} className="field">
-                                    <option value="">Sélectionner</option>
-                                    <option value="single">Célibataire</option>
-                                    <option value="married">Marié(e)</option>
-                                    <option value="divorced">Divorcé(e)</option>
-                                    <option value="widowed">Veuf/Veuve</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Nationalité</label>
-                                <input {...register('nationality')} type="text" className="field" />
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <h3 className="text-lg font-medium text-gray-900">Affectation</h3>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Département</label>
-                                <select {...register('department_id')} className="field">
-                                    <option value="">Sélectionner un département</option>
-                                    {departments.map((department) => (
-                                        <option key={department.id} value={department.id}>{department.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Poste</label>
-                                <select {...register('position_id')} className="field">
-                                    <option value="">Sélectionner un poste</option>
-                                    {filteredPositions.map((position) => (
-                                        <option key={position.id} value={position.id}>{position.title}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <h3 className="text-lg font-medium text-gray-900">Contact d'urgence</h3>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Nom du contact</label>
-                                <input {...register('emergency_contact')} type="text" className="field" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Téléphone du contact</label>
-                                <input {...register('emergency_phone')} type="tel" className="field" />
-                            </div>
-                            <div className="col-span-2">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4 mt-4">Situation familiale & bancaire</h3>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Nombre d'enfants à charge</label>
-                                <input
-                                    {...register('children_count')}
-                                    type="number"
-                                    min="0"
-                                    max="30"
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Nom de la banque</label>
-                                <input
-                                    {...register('bank_name')}
-                                    type="text"
-                                    placeholder="Ex: ORABANK BENIN"
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Numéro de compte</label>
-                                <input
-                                    {...register('bank_account_number')}
-                                    type="text"
-                                    placeholder="Ex: BJ058010130130..."
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-3 pt-6 border-t">
-                            <button type="button" onClick={() => navigate('/employees')} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                                Annuler
-                            </button>
-                            <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50">
-                                {saving ? 'Création...' : 'Créer l’employé'}
-                            </button>
-                        </div>
-                    </form>
-                </Card>
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Nouvel employé</h1>
+                <p className="text-gray-500 mt-1">Créer le dossier RH d'un nouvel employé</p>
             </div>
-        </Layout>
+
+            <Card>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                            <h3 className="text-lg font-medium text-gray-900">Informations personnelles</h3>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Prénom *</label>
+                            <input {...register('first_name', { required: 'Le prénom est requis' })} type="text" className="field" />
+                            {errors.first_name && <p className="error">{errors.first_name.message}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Nom *</label>
+                            <input {...register('last_name', { required: 'Le nom est requis' })} type="text" className="field" />
+                            {errors.last_name && <p className="error">{errors.last_name.message}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Email *</label>
+                            <input
+                                {...register('email', {
+                                    required: 'L email est requis',
+                                    pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, message: 'Email invalide' },
+                                })}
+                                type="email"
+                                className="field"
+                            />
+                            {errors.email && <p className="error">{errors.email.message}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Téléphone</label>
+                            <input {...register('phone')} type="tel" className="field" />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">
+                                Date d'embauche *
+                            </label>
+
+                            <input
+                                {...register('hire_date', {
+                                    required: "La date d'embauche est requise"
+                                })}
+                                type="date"
+                                className="field"
+                            />
+
+                            {errors.hire_date && (
+                                <p className="error">{errors.hire_date.message}</p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Date de naissance</label>
+                            <input {...register('birth_date')} type="date" className="field" />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Genre</label>
+                            <select {...register('gender')} className="field">
+                                <option value="">Sélectionner</option>
+                                <option value="male">Homme</option>
+                                <option value="female">Femme</option>
+                                <option value="other">Autre</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Situation matrimoniale</label>
+                            <select {...register('marital_status')} className="field">
+                                <option value="">Sélectionner</option>
+                                <option value="single">Célibataire</option>
+                                <option value="married">Marié(e)</option>
+                                <option value="divorced">Divorcé(e)</option>
+                                <option value="widowed">Veuf/Veuve</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Nationalité</label>
+                            <input {...register('nationality')} type="text" className="field" />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <h3 className="text-lg font-medium text-gray-900">Affectation</h3>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Département</label>
+                            <select {...register('department_id')} className="field">
+                                <option value="">Sélectionner un département</option>
+                                {departments.map((department) => (
+                                    <option key={department.id} value={department.id}>{department.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Poste</label>
+                            <select {...register('position_id')} className="field">
+                                <option value="">Sélectionner un poste</option>
+                                {filteredPositions.map((position) => (
+                                    <option key={position.id} value={position.id}>{position.title}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <h3 className="text-lg font-medium text-gray-900">Contact d'urgence</h3>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Nom du contact</label>
+                            <input {...register('emergency_contact')} type="text" className="field" />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Téléphone du contact</label>
+                            <input {...register('emergency_phone')} type="tel" className="field" />
+                        </div>
+                        <div className="col-span-2">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4 mt-4">Situation familiale & bancaire</h3>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Nombre d'enfants à charge</label>
+                            <input
+                                {...register('children_count')}
+                                type="number"
+                                min="0"
+                                max="30"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Nom de la banque</label>
+                            <input
+                                {...register('bank_name')}
+                                type="text"
+                                placeholder="Ex: ORABANK BENIN"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Numéro de compte</label>
+                            <input
+                                {...register('bank_account_number')}
+                                type="text"
+                                placeholder="Ex: BJ058010130130..."
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-6 border-t">
+                        <button type="button" onClick={() => navigate('/employees')} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                            Annuler
+                        </button>
+                        <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50">
+                            {saving ? 'Création...' : 'Créer l’employé'}
+                        </button>
+                    </div>
+                </form>
+            </Card>
+        </div>
     );
 };
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Layout from '../../components/common/Layout';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import { useForm } from 'react-hook-form';
@@ -82,98 +81,96 @@ const ContractEdit: React.FC = () => {
     }
 
     return (
-        <Layout>
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Modifier le contrat</h1>
-                    <p className="text-gray-500 mt-1">{employeeLabel}</p>
-                </div>
-
-                <Card>
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Type de contrat *</label>
-                                <select {...register('type', { required: true })} className="field">
-                                    <option value="cdi">CDI</option>
-                                    <option value="cdd">CDD</option>
-                                    <option value="stage">Stage</option>
-                                    <option value="consultant">Consultant</option>
-                                    <option value="freelance">Freelance</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Statut *</label>
-                                <select {...register('status', { required: true })} className="field">
-                                    <option value="active">Actif</option>
-                                    <option value="pending">En attente</option>
-                                    <option value="expired">Expiré</option>
-                                    <option value="terminated">Terminé</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Devise *</label>
-                                <select {...register('currency', { required: true })} className="field">
-                                    <option value="XOF">FCFA (XOF)</option>
-                                    <option value="EUR">Euro (EUR)</option>
-                                    <option value="USD">Dollar (USD)</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Salaire de base *</label>
-                                <input
-                                    {...register('base_salary', { required: 'Le salaire est requis', min: 0 })}
-                                    type="number"
-                                    step="0.01"
-                                    className="field"
-                                />
-                                {errors.base_salary && <p className="error">{errors.base_salary.message}</p>}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Date de début *</label>
-                                <input {...register('start_date', { required: true })} type="date" className="field" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Date de fin</label>
-                                <input {...register('end_date')} type="date" className="field" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Fin de période d'essai</label>
-                                <input {...register('probation_end_date')} type="date" className="field" />
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700">Clauses / observations</label>
-                                <textarea {...register('terms')} rows={4} className="field" />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-3 pt-6 border-t">
-                            <button
-                                type="button"
-                                onClick={() => navigate('/contracts')}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                            >
-                                Annuler
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={saving}
-                                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50"
-                            >
-                                {saving ? 'Enregistrement...' : 'Enregistrer'}
-                            </button>
-                        </div>
-                    </form>
-                </Card>
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Modifier le contrat</h1>
+                <p className="text-gray-500 mt-1">{employeeLabel}</p>
             </div>
-        </Layout>
+
+            <Card>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Type de contrat *</label>
+                            <select {...register('type', { required: true })} className="field">
+                                <option value="cdi">CDI</option>
+                                <option value="cdd">CDD</option>
+                                <option value="stage">Stage</option>
+                                <option value="consultant">Consultant</option>
+                                <option value="freelance">Freelance</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Statut *</label>
+                            <select {...register('status', { required: true })} className="field">
+                                <option value="active">Actif</option>
+                                <option value="pending">En attente</option>
+                                <option value="expired">Expiré</option>
+                                <option value="terminated">Terminé</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Devise *</label>
+                            <select {...register('currency', { required: true })} className="field">
+                                <option value="XOF">FCFA (XOF)</option>
+                                <option value="EUR">Euro (EUR)</option>
+                                <option value="USD">Dollar (USD)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Salaire de base *</label>
+                            <input
+                                {...register('base_salary', { required: 'Le salaire est requis', min: 0 })}
+                                type="number"
+                                step="0.01"
+                                className="field"
+                            />
+                            {errors.base_salary && <p className="error">{errors.base_salary.message}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Date de début *</label>
+                            <input {...register('start_date', { required: true })} type="date" className="field" />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Date de fin</label>
+                            <input {...register('end_date')} type="date" className="field" />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Fin de période d'essai</label>
+                            <input {...register('probation_end_date')} type="date" className="field" />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700">Clauses / observations</label>
+                            <textarea {...register('terms')} rows={4} className="field" />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-6 border-t">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/contracts')}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50"
+                        >
+                            {saving ? 'Enregistrement...' : 'Enregistrer'}
+                        </button>
+                    </div>
+                </form>
+            </Card>
+        </div>
     );
 };
 
