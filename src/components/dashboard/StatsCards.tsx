@@ -56,7 +56,7 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
         },
         {
             title: 'Masse salariale',
-            value: stats?.payroll_total || '0 FCFA',
+            value: stats?.payroll_total ? `${stats.payroll_total.toLocaleString()} FCFA` : '0 FCFA',
             icon: CurrencyDollarIcon,
             color: 'bg-purple-50',
             format: 'currency',
