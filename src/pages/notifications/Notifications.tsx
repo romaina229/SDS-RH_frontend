@@ -17,9 +17,7 @@ import {
     DocumentIcon,
     CalendarIcon,
     CurrencyDollarIcon,
-    ClockIcon,
     EyeIcon,
-    EyeSlashIcon,
 } from '@heroicons/react/24/outline';
 
 const Notifications: React.FC = () => {
@@ -32,7 +30,7 @@ const Notifications: React.FC = () => {
         total: 0,
     });
     const [filter, setFilter] = useState<string>('all');
-    const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+    const [] = useState<Notification | null>(null);
 
     useEffect(() => {
         fetchNotifications();
