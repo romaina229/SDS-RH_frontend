@@ -18,6 +18,34 @@ export interface Tenant {
   updated_at: string;
 }
 
+export interface SubscriptionInfo {
+  tenant: {
+    name: string;
+    is_active: boolean;
+    subscription_plan: string;
+    subscription_expires_at?: string;
+  };
+  subscription: {
+    plan: string;
+    price?: number;
+    currency: string;
+    billing_cycle: string;
+    start_date: string;
+    end_date: string;
+    status: string;
+    payment_method?: string;
+    is_active: boolean;
+  } | null;
+  usage: {
+    employees_used: number;
+    employees_limit: number | null;
+    seats_available: number | null;
+    is_at_limit: boolean;
+  };
+  days_remaining: number | null;
+  is_trial: boolean;
+}
+
 export interface User {
   id: number;
   tenant_id: number;
@@ -42,6 +70,33 @@ export interface BankDetails {
   account_number?: string;
 }
 
+export interface Role {
+  id: number;
+  name: string;
+  is_system: boolean;
+  users_count: number;
+  permissions: string[];
+}
+
+export interface PermissionGroup {
+  group: string;
+  permissions: string[];
+}
+
+export interface AdminUser {
+  id: number;
+  tenant_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  status: 'active' | 'inactive';
+  invited_at?: string;
+  last_login_at?: string;
+  created_at: string;
+  roles: { id: number; name: string }[];
+}
+
 export interface Employee {
   id: number;
   tenant_id: number;
@@ -61,6 +116,8 @@ export interface Employee {
   social_security?: Record<string, any>;
   status: 'active' | 'on_leave' | 'terminated' | 'suspended';
   terminated_at?: string;
+  termination_type?: 'resignation' | 'dismissal' | 'contract_end' | 'retirement' | 'death' | 'other' | null;
+  termination_reason?: string | null;
   created_at: string;
   updated_at: string;
   user?: User;

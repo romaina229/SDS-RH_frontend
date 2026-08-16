@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import { portal } from '../../api/portal';
-import { buildPayslipHtml } from '../payroll/paysliptemplate';
 import type { Payroll } from '../../types';
 import toast from 'react-hot-toast';
 import { ArrowDownTrayIcon as DownloadIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
@@ -49,24 +48,18 @@ const MyPayslips: React.FC = () => {
         }
     };
 
-    const printPayslip = async (id: number): Promise<void> => {
+    const downloadPayslip = async (id: number): Promise<void> => {
         try {
-            const response = await portal.payslip(id);
-            const payroll: Payroll = response.data.payroll;
-
-            const printWindow = window.open('', '_blank', 'width=900,height=1000');
-            if (!printWindow) {
-                toast.error('Autorisez les fenêtres contextuelles pour imprimer le bulletin');
-                return;
-            }
-
-            printWindow.document.write(buildPayslipHtml(payroll));
-            printWindow.document.close();
-            printWindow.focus();
-            
-            setTimeout(() => {
-                printWindow.print();
-            }, 500);
+            const response = await portal.downloadPayslip(id);
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `bulletin-de-paie-${id}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Erreur lors de la génération du bulletin');
         }
@@ -106,9 +99,9 @@ const MyPayslips: React.FC = () => {
                                 </div>
                             </div>
                             <button
-                                onClick={() => printPayslip(payslip.id)}
+                                onClick={() => downloadPayslip(payslip.id)}
                                 className="p-1 text-primary-600 hover:text-primary-900"
-                                title="Imprimer / télécharger"
+                                title="Télécharger le bulletin PDF"
                             >
                                 <DownloadIcon className="h-5 w-5" />
                             </button>

@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import CareerTimeline from '../../components/employees/CareerTimeline';
 import { employees } from '../../api/employees';
 import { useAuth } from '../../context/AuthContext';
+import axios from '../../api/axios';
+import toast from 'react-hot-toast';
+import { downloadBlobResponse, extensionFromPath } from '../../utils/downloadFile';
 import type { Employee, EmployeeHistory } from '../../types';
 import {
     PencilIcon,
@@ -17,11 +21,8 @@ import {
     CurrencyDollarIcon,
     PlusIcon,
     ClockIcon,
+    ArrowDownTrayIcon as DownloadIcon,
 } from '@heroicons/react/24/outline';
-
-const toast = {
-    error: (message: string) => console.error(message),
-};
 
 interface HistoryFormData {
     type: string;
@@ -43,42 +44,53 @@ const EmployeeShow: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { hasPermission } = useAuth();
-    const [loading, setLoading] = useState<boolean>(true);
-    const [employee, setEmployee] = useState<Employee | null>(null);
-    const [history, setHistory] = useState<EmployeeHistory[]>([]);
-    const [historyLoading, setHistoryLoading] = useState<boolean>(true);
+    const queryClient = useQueryClient();
+    const employeeId = Number(id);
     const [showHistoryForm, setShowHistoryForm] = useState<boolean>(false);
     const [savingHistory, setSavingHistory] = useState<boolean>(false);
     const [historyForm, setHistoryForm] = useState<HistoryFormData>(emptyHistoryForm);
 
-    useEffect(() => {
-        fetchEmployee();
-        fetchHistory();
-    }, [id]);
+    const {
+        data: employee,
+        isPending: loading,
+        isError: employeeError,
+    } = useQuery<Employee>({
+        queryKey: ['employee', employeeId],
+        queryFn: async () => (await employees.show(employeeId)).data.employee,
+        enabled: Number.isFinite(employeeId),
+        staleTime: 60_000,
+    });
 
-    const fetchEmployee = async (): Promise<void> => {
-        try {
-            const response = await employees.show(Number(id));
-            setEmployee(response.data.employee);
-        } catch (error) {
-            toast.error('Erreur lors du chargement de l\'employé');
-            navigate('/employees');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const {
+        data: history = [],
+        isPending: historyLoading,
+    } = useQuery<EmployeeHistory[]>({
+        queryKey: ['employee-history', employeeId],
+        queryFn: async () => (await employees.history.list(employeeId)).data.data,
+        enabled: Number.isFinite(employeeId),
+        staleTime: 30_000,
+    });
 
-    const fetchHistory = async (): Promise<void> => {
-        setHistoryLoading(true);
-        try {
-            const response = await employees.history.list(Number(id));
-            setHistory(response.data.data);
-        } catch (error) {
-            // Silencieux : l'historique est secondaire par rapport à la fiche.
-        } finally {
-            setHistoryLoading(false);
-        }
-    };
+    const invalidateHistory = (): Promise<void> =>
+        queryClient.invalidateQueries({ queryKey: ['employee-history', employeeId] });
+
+    const historyMutation = useMutation({
+        mutationFn: (payload: HistoryFormData) => employees.history.create(employeeId, {
+            type: payload.type,
+            title: payload.title,
+            description: payload.description || null,
+            effective_date: payload.effective_date,
+            new_salary: payload.new_salary ? Number(payload.new_salary) : null,
+        }),
+        onSuccess: async () => {
+            setHistoryForm(emptyHistoryForm);
+            setShowHistoryForm(false);
+            await invalidateHistory();
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || "Erreur lors de l'ajout de l'événement");
+        },
+    });
 
     const handleAddHistory = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
@@ -86,20 +98,34 @@ const EmployeeShow: React.FC = () => {
 
         setSavingHistory(true);
         try {
-            await employees.history.create(Number(id), {
-                type: historyForm.type,
-                title: historyForm.title,
-                description: historyForm.description || null,
-                effective_date: historyForm.effective_date,
-                new_salary: historyForm.new_salary ? Number(historyForm.new_salary) : null,
-            });
-            setHistoryForm(emptyHistoryForm);
-            setShowHistoryForm(false);
-            fetchHistory();
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Erreur lors de l'ajout de l'événement");
+            await historyMutation.mutateAsync(historyForm);
+        } catch (error) {
+            // Déjà géré par onError de la mutation (toast affiché).
         } finally {
             setSavingHistory(false);
+        }
+    };
+
+    const handleDownloadDocument = async (docId: number, fileName?: string): Promise<void> => {
+        try {
+            const response = await axios.get(`/documents/${docId}/download`, {
+                responseType: 'blob',
+            });
+            downloadBlobResponse(response, fileName || 'document');
+        } catch (error) {
+            toast.error('Erreur lors du téléchargement du document');
+        }
+    };
+
+    const handleDownloadContract = async (contractId: number, employeeNumber?: string, contractFilePath?: string): Promise<void> => {
+        try {
+            const response = await axios.get(`/contracts/${contractId}/download`, {
+                responseType: 'blob',
+            });
+            const extension = extensionFromPath(contractFilePath) || '.pdf';
+            downloadBlobResponse(response, `contrat-${employeeNumber || id}-${contractId}${extension}`);
+        } catch (error) {
+            toast.error('Erreur lors du téléchargement du contrat');
         }
     };
 
@@ -107,7 +133,7 @@ const EmployeeShow: React.FC = () => {
         if (!confirm('Supprimer cet événement de carrière ?')) return;
         try {
             await employees.history.delete(historyId);
-            fetchHistory();
+            await invalidateHistory();
         } catch (error) {
             toast.error("Erreur lors de la suppression de l'événement");
         }
@@ -117,7 +143,7 @@ const EmployeeShow: React.FC = () => {
         return <Loading fullScreen />;
     }
 
-    if (!employee) {
+    if (employeeError || !employee) {
         return (
             <div className="text-center py-12">
                 <p className="text-gray-500">Employé non trouvé</p>
@@ -228,15 +254,74 @@ const EmployeeShow: React.FC = () => {
                     {Array.isArray(employee.documents) && employee.documents.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {employee.documents.map((doc) => (
-                                <div key={doc.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                                    <DocumentTextIcon className="h-8 w-8 text-primary-600 mb-2" />
-                                    <p className="font-medium text-gray-900">{doc.name}</p>
-                                    <p className="text-sm text-gray-500">{doc.type}</p>
+                                <div key={doc.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex items-start justify-between">
+                                    <div>
+                                        <DocumentTextIcon className="h-8 w-8 text-primary-600 mb-2" />
+                                        <p className="font-medium text-gray-900">{doc.name}</p>
+                                        <p className="text-sm text-gray-500">{doc.type}</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDownloadDocument(doc.id, doc.file_name || doc.name)}
+                                        className="p-1.5 text-primary-600 hover:text-primary-800 hover:bg-primary-50 rounded-md"
+                                        title="Télécharger"
+                                    >
+                                        <DownloadIcon className="h-5 w-5" />
+                                    </button>
                                 </div>
                             ))}
                         </div>
                     ) : (
                         <p className="text-gray-500 text-center py-4">Aucun document</p>
+                    )}
+                </Card>
+            </div>
+
+            {/* Contrats */}
+            <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Contrats</h2>
+                <Card>
+                    {Array.isArray(employee.contracts) && employee.contracts.length > 0 ? (
+                        <div className="divide-y divide-gray-100">
+                            {employee.contracts.map((contract) => (
+                                <div key={contract.id} className="py-3 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <DocumentTextIcon className="h-6 w-6 text-primary-600" />
+                                        <div>
+                                            <p className="font-medium text-gray-900 uppercase">
+                                                {contract.type} · {contract.status}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {new Date(contract.start_date).toLocaleDateString('fr-FR')}
+                                                {contract.end_date ? ` — ${new Date(contract.end_date).toLocaleDateString('fr-FR')}` : ' — indéterminée'}
+                                                {' · '}{Number(contract.base_salary).toLocaleString()} {contract.currency}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {contract.contract_file && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDownloadContract(contract.id, employee.employee_number, contract.contract_file)}
+                                                className="p-1.5 text-primary-600 hover:text-primary-800 hover:bg-primary-50 rounded-md"
+                                                title="Télécharger le contrat"
+                                            >
+                                                <DownloadIcon className="h-5 w-5" />
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate(`/contracts/${contract.id}`)}
+                                            className="text-sm font-medium text-primary-600 hover:text-primary-800"
+                                        >
+                                            Voir
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-gray-500 text-center py-4">Aucun contrat</p>
                     )}
                 </Card>
             </div>

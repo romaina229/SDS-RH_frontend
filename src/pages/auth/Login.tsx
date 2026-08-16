@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import PasswordInput from '../../components/common/PasswordInput';
 
 interface LoginFormData {
     email: string;
@@ -93,12 +94,11 @@ const Login: React.FC = () => {
                                     Oublié ?
                                 </Link>
                             </div>
-                            <input
+                            <PasswordInput
                                 {...register('password', {
                                     required: 'Le mot de passe est requis',
                                     minLength: { value: 6, message: 'Minimum 6 caractères' },
                                 })}
-                                type="password"
                                 autoComplete="current-password"
                                 className="field"
                                 placeholder="••••••••"

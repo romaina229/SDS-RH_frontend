@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import PrivateRoute from './PrivateRoute';
 import Layout from '../components/common/Layout'; 
+import SpaNavigationGuard from '../components/common/SpaNavigationGuard';
 
 // Page publique
 import Home from '../pages/marketing/Home';
@@ -21,7 +22,10 @@ import Employees from '../pages/employees/Employees';
 import EmployeeCreate from '../pages/employees/EmployeeCreate';
 import EmployeeEdit from '../pages/employees/EmployeeEdit';
 import EmployeeShow from '../pages/employees/EmployeeShow';
+import EmployeeExits from '../pages/employees/EmployeeExits';
+import EmployeeTerminate from '../pages/employees/EmployeeTerminate';
 import Departments from '../pages/departments/Departments';
+import Positions from '../pages/positions/Positions';
 import Contracts from '../pages/contracts/Contracts';
 import ContractCreate from '../pages/contracts/ContractCreat';
 import ContractEdit from '../pages/contracts/ContractEdit';
@@ -29,14 +33,20 @@ import ContractShow from '../pages/contracts/ContractShow';
 import Notifications from '../pages/notifications/Notifications';
 import Leaves from '../pages/leaves/Leaves';
 import LeaveCreate from '../pages/leaves/LeaveCreate';
+import LeaveShow from '../pages/leaves/LeaveShow';
 import Attendance from '../pages/attendance/Attendance';
 import QRClock from '../pages/attendance/QRClock';
+import Overtime from '../pages/attendance/Overtime';
 import Documents from '../pages/documents/Documents';
 import Payrolls from '../pages/payroll/Payrolls';
 import Recruitments from '../pages/recruitments/Recruitments';
 import Trainings from '../pages/trainings/Trainings';
 import Reports from '../pages/reports/Reports';
 import Settings from '../pages/settings/Settings';
+import Subscription from '../pages/settings/Subscription';
+import SubscriptionCallback from '../pages/settings/SubscriptionCallback';
+import Users from '../pages/admin/Users';
+import Roles from '../pages/admin/Roles';
 import Profile from '../pages/settings/Profile';
 import Organigram from '../pages/organigram/Organigram';
 import Performance from '../pages/performance/Performance';
@@ -52,6 +62,7 @@ const AppRoutes = () => {
     return (
         <BrowserRouter>
             <AuthProvider>
+                <SpaNavigationGuard />
                 <Routes>
                     {/* Routes publiques - SANS Layout */}
                     <Route path="/login" element={<Login />} />
@@ -77,12 +88,15 @@ const AppRoutes = () => {
 
                             {/* Employés */}
                             <Route path="/employees" element={<Employees />} />
+                            <Route path="/employees/exits" element={<EmployeeExits />} />
                             <Route path="/employees/create" element={<EmployeeCreate />} />
                             <Route path="/employees/:id" element={<EmployeeShow />} />
                             <Route path="/employees/:id/edit" element={<EmployeeEdit />} />
+                            <Route path="/employees/:id/terminate" element={<EmployeeTerminate />} />
 
                             {/* Départements */}
                             <Route path="/departments" element={<Departments />} />
+                            <Route path="/positions" element={<Positions />} />
                             <Route path="/organigram" element={<Organigram />} />
                             <Route path="/notifications" element={<Notifications />} />
 
@@ -95,10 +109,12 @@ const AppRoutes = () => {
                             {/* Congés */}
                             <Route path="/leaves" element={<Leaves />} />
                             <Route path="/leaves/create" element={<LeaveCreate />} />
+                            <Route path="/leaves/:id" element={<LeaveShow />} />
 
                             {/* Présences */}
                             <Route path="/attendance" element={<Attendance />} />
                             <Route path="/attendance/qr" element={<QRClock />} />
+                            <Route path="/overtime" element={<Overtime />} />
 
                             {/* Documents */}
                             <Route path="/documents" element={<Documents />} />
@@ -121,6 +137,10 @@ const AppRoutes = () => {
 
                             {/* Paramètres */}
                             <Route path="/settings" element={<Settings />} />
+                            <Route path="/subscription" element={<Subscription />} />
+                            <Route path="/subscription/callback" element={<SubscriptionCallback />} />
+                            <Route path="/users" element={<Users />} />
+                            <Route path="/roles" element={<Roles />} />
                             <Route path="/profile" element={<Profile />} />
 
                             {/* Redirection par défaut */}

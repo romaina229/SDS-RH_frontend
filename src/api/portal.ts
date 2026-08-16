@@ -28,6 +28,8 @@ export const portal = {
 
     payslips: (params?: ListParams) => axios.get('/portal/payslips', { params }),
     payslip: (id: number | string) => axios.get(`/portal/payslips/${id}`),
+    downloadPayslip: (id: number | string) =>
+        axios.get(`/portal/payslips/${id}/download`, { responseType: 'blob' }),
 
     // Module carrière — lecture seule de mon propre parcours.
     history: () => axios.get('/portal/history'),

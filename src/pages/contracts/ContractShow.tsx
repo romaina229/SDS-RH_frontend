@@ -6,6 +6,7 @@ import ContractAmendments from '../../pages/contracts/ContractAmendments';
 import type { Contract } from '../../types';
 import toast from 'react-hot-toast';
 import axios from '../../api/axios';
+import { downloadBlobResponse, extensionFromPath } from '../../utils/downloadFile';
 import {
     ArrowLeftIcon,
     PencilIcon,
@@ -82,6 +83,19 @@ const ContractShow: React.FC = () => {
             freelance: 'Freelance',
         };
         return labels[type] || type;
+    };
+
+    const handleDownloadContractFile = async (): Promise<void> => {
+        if (!contract) return;
+        try {
+            const response = await axios.get(`/contracts/${contract.id}/download`, {
+                responseType: 'blob',
+            });
+            const extension = extensionFromPath(contract.contract_file) || '.pdf';
+            downloadBlobResponse(response, `contrat-${contract.employee?.employee_number || contract.employee_id}-${contract.id}${extension}`);
+        } catch (error) {
+            toast.error('Erreur lors du téléchargement du contrat');
+        }
     };
 
     if (loading) {
@@ -304,10 +318,10 @@ const ContractShow: React.FC = () => {
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => window.open(contract.contract_file, '_blank')}
+                                    onClick={handleDownloadContractFile}
                                     className="px-4 py-2 text-sm font-medium text-primary-600 border border-primary-600 rounded-lg hover:bg-primary-50"
                                 >
-                                    Voir le document
+                                    Télécharger le document
                                 </button>
                             </div>
                         </Card>

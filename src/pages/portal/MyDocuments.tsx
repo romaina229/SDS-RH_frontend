@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Card from '../../components/common/Card';
 import Loading from '../../components/common/Loading';
 import { portal } from '../../api/portal';
+import { downloadBlobResponse } from '../../utils/downloadFile';
 import toast from 'react-hot-toast';
 import {
     PlusIcon,
@@ -15,6 +16,7 @@ import {
 interface PortalDocument {
     id: number;
     name: string;
+    file_name?: string;
     type: string;
     file_size: number;
     expiry_date?: string | null;
@@ -118,14 +120,7 @@ const MyDocuments: React.FC = () => {
     const handleDownload = async (doc: PortalDocument): Promise<void> => {
         try {
             const response = await portal.downloadDocument(doc.id);
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = doc.name;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
+            downloadBlobResponse(response, doc.file_name || doc.name);
         } catch (error) {
             toast.error('Erreur lors du téléchargement');
         }

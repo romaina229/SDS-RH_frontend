@@ -1,0 +1,133 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Card from '../../components/common/Card';
+import Loading from '../../components/common/Loading';
+import { employees } from '../../api/employees';
+import type { Employee, PaginatedResponse } from '../../types';
+import toast from 'react-hot-toast';
+import { EyeIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+
+const EXIT_TYPES: Record<string, string> = {
+    resignation: 'Démission',
+    dismissal: 'Licenciement',
+    contract_end: 'Fin de contrat',
+    retirement: 'Retraite',
+    death: 'Décès',
+    other: 'Autre',
+};
+
+const EmployeeExits: React.FC = () => {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [items, setItems] = useState<Employee[]>([]);
+    const [search, setSearch] = useState('');
+    const [type, setType] = useState('');
+
+    useEffect(() => {
+        const timer = window.setTimeout(async () => {
+            setLoading(true);
+            try {
+                const response = await employees.exits({
+                    ...(search ? { search } : {}),
+                    ...(type ? { termination_type: type } : {}),
+                    per_page: 50,
+                });
+                const data = response.data as PaginatedResponse<Employee>;
+                setItems(data.data);
+            } catch {
+                toast.error('Erreur lors du chargement des sorties');
+            } finally {
+                setLoading(false);
+            }
+        }, 250);
+        return () => window.clearTimeout(timer);
+    }, [search, type]);
+
+    if (loading && items.length === 0) return <Loading fullScreen />;
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Sorties employés</h1>
+                <p className="mt-1 text-gray-500">Salariés ayant quitté l'organisation et historique de sortie.</p>
+            </div>
+
+            <Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="relative">
+                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Rechercher un employé ou matricule..."
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
+                        />
+                    </div>
+                    <select
+                        value={type}
+                        onChange={(e) => setType(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-md"
+                    >
+                        <option value="">Tous les motifs de sortie</option>
+                        {Object.entries(EXIT_TYPES).map(([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                        ))}
+                    </select>
+                </div>
+            </Card>
+
+            <Card>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employé</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matricule</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Département</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date de sortie</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motif</th>
+                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {items.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                                        Aucune sortie enregistrée
+                                    </td>
+                                </tr>
+                            )}
+                            {items.map((employee) => (
+                                <tr key={employee.id}>
+                                    <td className="px-4 py-3 font-medium text-gray-900">
+                                        {employee.user?.first_name} {employee.user?.last_name}
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-gray-600">{employee.employee_number}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600">{employee.department?.name || '-'}</td>
+                                    <td className="px-4 py-3 text-sm text-gray-600">
+                                        {employee.terminated_at ? new Date(employee.terminated_at).toLocaleDateString('fr-FR') : '-'}
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-gray-600">
+                                        {employee.termination_type ? (EXIT_TYPES[employee.termination_type] || 'Non renseigné') : 'Non renseigné'}
+                                    </td>
+                                    <td className="px-4 py-3 text-right">
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate(`/employees/${employee.id}`)}
+                                            className="inline-flex items-center text-primary-600 hover:text-primary-900"
+                                        >
+                                            <EyeIcon className="h-5 w-5 mr-1" />
+                                            Voir
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
+export default EmployeeExits;

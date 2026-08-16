@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import Card from '../../components/common/Card';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -11,11 +12,7 @@ const QRClock: React.FC = () => {
     const [scanned, setScanned] = useState<boolean>(false);
     const [expiresAt, setExpiresAt] = useState<string>('');
 
-    useEffect(() => {
-        generateQR();
-    }, [user?.employee?.id]);
-
-    const generateQR = async (): Promise<void> => {
+    const generateQR = useCallback(async (): Promise<void> => {
         if (!user?.employee?.id) {
             return;
         }
@@ -23,7 +20,7 @@ const QRClock: React.FC = () => {
         setLoading(true);
         try {
             const response = await axios.get('/attendances/generate-qr', {
-                params: { employee_id: user?.employee?.id }
+                params: { employee_id: user.employee.id },
             });
             setQrCode(response.data.qr_code);
             setExpiresAt(response.data.expires_at);
@@ -32,7 +29,11 @@ const QRClock: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user?.employee?.id]);
+
+    useEffect(() => {
+        generateQR();
+    }, [generateQR]);
 
     const handleScan = async (): Promise<void> => {
         setScanned(true);
@@ -64,11 +65,7 @@ const QRClock: React.FC = () => {
                             ) : qrCode ? (
                                 <div className="space-y-4">
                                     <div className="bg-white p-4 rounded-lg inline-block">
-                                        <img
-                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrCode}`}
-                                            alt="QR Code"
-                                            className="mx-auto"
-                                        />
+                                        <QRCodeSVG value={qrCode} size={200} marginSize={2} />
                                     </div>
                                     <p className="text-sm text-gray-500">
                                         Scannez ce QR code avec votre téléphone
@@ -79,6 +76,7 @@ const QRClock: React.FC = () => {
                                         </p>
                                     )}
                                     <button
+                                        type="button"
                                         onClick={handleScan}
                                         disabled={scanned}
                                         className="w-full px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
@@ -92,6 +90,7 @@ const QRClock: React.FC = () => {
                         </div>
 
                         <button
+                            type="button"
                             onClick={generateQR}
                             className="px-4 py-2 text-sm font-medium text-primary-600 hover:text-primary-700"
                         >

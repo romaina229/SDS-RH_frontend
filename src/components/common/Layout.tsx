@@ -6,25 +6,63 @@ import Header from './Header';
 
 const Layout: React.FC = memo(() => {
     const { user } = useAuth();
-    const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+
+    const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+
+    const toggleSidebar = (): void => {
+        setSidebarOpen((previous) => !previous);
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <Sidebar isOpen={sidebarOpen} toggle={() => setSidebarOpen(!sidebarOpen)} />
-            
-            {!sidebarOpen && (
-                <button
-                    aria-label="Ouvrir le menu"
-                    onClick={() => setSidebarOpen(true)}
-                    className="fixed inset-0 z-40 bg-black/30 lg:hidden"
-                />
-            )}
 
-            <div className={`transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-20'}`}>
-                <Header toggleSidebar={() => setSidebarOpen(!sidebarOpen)} user={user} />
-                
-                <main className="p-6">
-                    <Outlet /> 
+            {/* Sidebar */}
+            <Sidebar
+                isOpen={sidebarOpen}
+                toggle={toggleSidebar}
+            />
+
+            {/* Contenu principal */}
+            <div
+                className={`
+                    min-h-screen
+                    transition-all
+                    duration-300
+                    ease-in-out
+
+                    /*
+                     * MOBILE
+                     * Aucun margin-left.
+                     * Le contenu prend toute la largeur.
+                     */
+
+                    /*
+                     * DESKTOP
+                     * Sidebar réduite : 80px
+                     */
+                    lg:ml-20
+
+                    /*
+                     * DESKTOP
+                     * Sidebar ouverte : 240px
+                     */
+                    ${sidebarOpen ? 'lg:ml-60' : ''}
+                `}
+            >
+                <Header
+                    toggleSidebar={toggleSidebar}
+                    user={user}
+                />
+
+                <main
+                    className="
+                        min-h-[calc(100vh-72px)]
+                        p-4
+                        sm:p-5
+                        lg:p-6
+                    "
+                >
+                    <Outlet />
                 </main>
             </div>
         </div>

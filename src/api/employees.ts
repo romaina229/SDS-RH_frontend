@@ -19,6 +19,12 @@ export const employees = {
     update: (id: string | number, data: EmployeeData) => axios.put(`/employees/${id}`, data),
     delete: (id: string | number) => axios.delete(`/employees/${id}`),
     stats: () => axios.get('/employees/stats'),
+    exits: (params?: Record<string, string | number>) => axios.get('/employees/exits', { params }),
+    terminate: (id: number | string, payload: {
+        termination_type: string;
+        terminated_at: string;
+        termination_reason?: string;
+    }) => axios.post(`/employees/${id}/terminate`, payload),
 
     // Module carrière — chronologie complète d'un employé (vue RH/manager).
     history: {

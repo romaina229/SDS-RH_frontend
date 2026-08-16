@@ -1,5 +1,7 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+
 import {
     HomeIcon,
     UserCircleIcon,
@@ -18,9 +20,15 @@ import {
     BellIcon,
     TrophyIcon,
     DocumentCurrencyYenIcon,
+    IdentificationIcon,
+    ArrowRightOnRectangleIcon,
+    ShieldCheckIcon,
+    CreditCardIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
+    XMarkIcon,
 } from '@heroicons/react/24/outline';
+
 import logo from '/logo.svg';
 
 interface SidebarProps {
@@ -31,7 +39,10 @@ interface SidebarProps {
 interface NavigationItem {
     name: string;
     href: string;
-    icon: React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement>>;
+    icon: React.ForwardRefExoticComponent<
+        React.SVGProps<SVGSVGElement> &
+        React.RefAttributes<SVGSVGElement>
+    >;
     permission?: string;
 }
 
@@ -52,6 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     href: '/dashboard',
                     icon: HomeIcon,
                 },
+
                 ...(isSuperAdmin
                     ? [
                           {
@@ -63,6 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     : []),
             ],
         },
+
         {
             label: 'Mon espace',
             items: [
@@ -71,9 +84,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     href: '/profile',
                     icon: UserCircleIcon,
                 },
-                { name: 'Mon espace', href: '/portal', icon: UsersIcon },
+                {
+                    name: 'Mon espace',
+                    href: '/portal',
+                    icon: UsersIcon,
+                },
             ],
         },
+
         {
             label: 'Personnel',
             items: [
@@ -84,10 +102,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     permission: 'view_employees',
                 },
                 {
+                    name: 'Sorties employés',
+                    href: '/employees/exits',
+                    icon: ArrowRightOnRectangleIcon,
+                    permission: 'view_employees',
+                },
+                {
                     name: 'Départements',
                     href: '/departments',
                     icon: UserGroupIcon,
                     permission: 'view_departments',
+                },
+                {
+                    name: 'Postes',
+                    href: '/positions',
+                    icon: IdentificationIcon,
+                    permission: 'view_positions',
                 },
                 {
                     name: 'Organigramme',
@@ -106,9 +136,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     href: '/performances',
                     icon: TrophyIcon,
                     permission: 'view_performances',
-                }
+                },
             ],
         },
+
         {
             label: 'Temps & Paie',
             items: [
@@ -116,7 +147,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     name: 'Présences',
                     href: '/attendance',
                     icon: ClockIcon,
-                    permission: 'view_employees',
+                    permission: 'view_attendance',
+                },
+                {
+                    name: 'Heures supplémentaires',
+                    href: '/overtime',
+                    icon: ClockIcon,
+                    permission: 'view_attendance',
                 },
                 {
                     name: 'Congés',
@@ -132,6 +169,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                 },
             ],
         },
+
         {
             label: 'Développement',
             items: [
@@ -149,6 +187,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                 },
             ],
         },
+
         {
             label: 'Documents & Rapports',
             items: [
@@ -166,9 +205,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                 },
             ],
         },
+
         {
             label: 'Système',
             items: [
+                {
+                    name: 'Utilisateurs',
+                    href: '/users',
+                    icon: UsersIcon,
+                    permission: 'view_users',
+                },
+                {
+                    name: 'Rôles & permissions',
+                    href: '/roles',
+                    icon: ShieldCheckIcon,
+                    permission: 'view_roles',
+                },
                 {
                     name: 'Notifications',
                     href: '/notifications',
@@ -180,44 +232,138 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     icon: CogIcon,
                     permission: 'view_settings',
                 },
+                {
+                    name: 'Mon abonnement',
+                    href: '/subscription',
+                    icon: CreditCardIcon,
+                    permission: 'view_settings',
+                },
             ],
         },
     ];
 
     return (
         <>
-            {/* Overlay pour mobile */}
+            {/* ============================================================
+                OVERLAY MOBILE
+            ============================================================= */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    className="
+                        fixed
+                        inset-0
+                        z-40
+                        bg-black/50
+                        backdrop-blur-[2px]
+                        lg:hidden
+                    "
                     onClick={toggle}
+                    aria-hidden="true"
                 />
             )}
 
+            {/* ============================================================
+                SIDEBAR
+            ============================================================= */}
             <aside
-                className={`fixed top-0 left-0 h-screen bg-primary-700 text-white transition-all duration-300 z-50 flex flex-col ${
-                    isOpen ? 'w-60' : 'w-20'
-                }`}
+                className={`
+                    fixed
+                    left-0
+                    top-0
+                    z-50
+                    flex
+                    h-screen
+                    flex-col
+                    bg-primary-800
+                    text-white
+                    shadow-2xl
+                    transition-all
+                    duration-300
+                    ease-in-out
+
+                    /*
+                     * MOBILE
+                     * Fermé = complètement hors écran
+                     * Ouvert = largeur 280px
+                     */
+                    ${isOpen ? 'translate-x-0 w-72' : '-translate-x-full w-72'}
+
+                    /*
+                     * DESKTOP
+                     * Toujours visible
+                     * Ouvert = 240px
+                     * Fermé = 80px
+                     */
+                    lg:translate-x-0
+                    ${isOpen ? 'lg:w-60' : 'lg:w-20'}
+                `}
             >
-                {/* Logo */}
-                <div className="flex items-center justify-between h-16 px-4 border-b border-primary-600">
-                    <div className="flex items-center">
+                {/* ========================================================
+                    HEADER SIDEBAR
+                ========================================================= */}
+                <div
+                    className="
+                        flex
+                        h-16
+                        shrink-0
+                        items-center
+                        justify-between
+                        border-b
+                        border-primary-700
+                        px-4
+                    "
+                >
+                    {/* Logo */}
+                    <div className="flex min-w-0 items-center">
+
                         {isOpen ? (
                             <img
                                 src={logo}
                                 alt="SDS-RH"
-                                className="h-45 w-45"
+                                className="
+                                    h-10
+                                    w-auto
+                                    max-w-[170px]
+                                    object-contain
+                                "
                             />
                         ) : (
-                            <span className="text-xl font-bold text-primary-400">
+                            <span
+                                className="
+                                    hidden
+                                    text-xl
+                                    font-bold
+                                    text-primary-300
+                                    lg:block
+                                "
+                            >
                                 S
                             </span>
                         )}
+
                     </div>
 
+                    {/* Bouton desktop */}
                     <button
                         onClick={toggle}
-                        className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-primary-700 transition-colors text-primary-300"
+                        aria-label={
+                            isOpen
+                                ? 'Réduire le menu'
+                                : 'Développer le menu'
+                        }
+                        className="
+                            hidden
+                            h-8
+                            w-8
+                            items-center
+                            justify-center
+                            rounded-lg
+                            text-primary-300
+                            transition-colors
+                            hover:bg-primary-700
+                            hover:text-white
+                            lg:flex
+                        "
                     >
                         {isOpen ? (
                             <ChevronLeftIcon className="h-5 w-5" />
@@ -225,10 +371,45 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                             <ChevronRightIcon className="h-5 w-5" />
                         )}
                     </button>
+
+                    {/* Bouton fermeture MOBILE */}
+                    <button
+                        onClick={toggle}
+                        aria-label="Fermer le menu"
+                        className="
+                            flex
+                            h-9
+                            w-9
+                            items-center
+                            justify-center
+                            rounded-xl
+                            text-primary-200
+                            transition-colors
+                            hover:bg-primary-700
+                            hover:text-white
+                            lg:hidden
+                        "
+                    >
+                        <XMarkIcon className="h-5 w-5" />
+                    </button>
                 </div>
 
-                {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6" style={{scrollbarWidth: 'none', msOverflowStyle: 'none',}} >
+                {/* ========================================================
+                    NAVIGATION
+                ========================================================= */}
+                <nav
+                    className="
+                        flex-1
+                        overflow-y-auto
+                        px-3
+                        py-4
+                        space-y-6
+                    "
+                    style={{
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                    }}
+                >
                     {sections.map((section, idx) => {
                         const visibleItems = section.items.filter(
                             (item) =>
@@ -236,22 +417,42 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                                 hasPermission(item.permission)
                         );
 
-                        if (visibleItems.length === 0) return null;
+                        if (visibleItems.length === 0) {
+                            return null;
+                        }
 
                         return (
                             <div key={idx}>
+
+                                {/* Titre de section */}
                                 {isOpen && section.label && (
-                                    <p className="text-xs font-semibold text-primary-400 uppercase tracking-wider px-3 mb-2">
+                                    <p
+                                        className="
+                                            mb-2
+                                            px-3
+                                            text-[10px]
+                                            font-bold
+                                            uppercase
+                                            tracking-[0.12em]
+                                            text-primary-400
+                                        "
+                                    >
                                         {section.label}
                                     </p>
                                 )}
 
+                                {/* Items */}
                                 <div className="space-y-1">
                                     {visibleItems.map((item) => (
                                         <NavLink
                                             key={item.name}
                                             to={item.href}
                                             onClick={() => {
+                                                /*
+                                                 * Sur mobile uniquement :
+                                                 * fermeture automatique après
+                                                 * sélection d'un menu.
+                                                 */
                                                 if (
                                                     window.innerWidth < 1024
                                                 ) {
@@ -259,29 +460,68 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                                                 }
                                             }}
                                             className={({ isActive }) =>
-                                                `flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                                                `
+                                                group
+                                                flex
+                                                items-center
+                                                rounded-xl
+                                                px-3
+                                                py-2.5
+                                                transition-all
+                                                duration-200
+
+                                                ${
                                                     isActive
-                                                        ? 'bg-primary-700/70 text-white shadow-lg shadow-primary-700/20'
-                                                        : 'text-primary-200 hover:bg-primary-700/40 hover:text-white'
-                                                } ${
+                                                        ? `
+                                                            bg-white/10
+                                                            text-white
+                                                            shadow-sm
+                                                            ring-1
+                                                            ring-white/5
+                                                          `
+                                                        : `
+                                                            text-primary-200
+                                                            hover:bg-white/5
+                                                            hover:text-white
+                                                          `
+                                                }
+
+                                                ${
                                                     !isOpen
                                                         ? 'justify-center'
                                                         : ''
-                                                }`
+                                                }
+                                                `
                                             }
                                         >
                                             {({ isActive }) => (
                                                 <>
                                                     <item.icon
-                                                        className={`h-5 w-5 flex-shrink-0 ${
-                                                            isActive
-                                                                ? 'text-primary-300'
-                                                                : ''
-                                                        }`}
+                                                        className={`
+                                                            h-5
+                                                            w-5
+                                                            shrink-0
+                                                            transition-transform
+                                                            duration-200
+                                                            group-hover:scale-105
+
+                                                            ${
+                                                                isActive
+                                                                    ? 'text-primary-300'
+                                                                    : 'text-primary-200'
+                                                            }
+                                                        `}
                                                     />
 
                                                     {isOpen && (
-                                                        <span className="ml-3 text-sm font-medium truncate">
+                                                        <span
+                                                            className="
+                                                                ml-3
+                                                                truncate
+                                                                text-sm
+                                                                font-medium
+                                                            "
+                                                        >
                                                             {item.name}
                                                         </span>
                                                     )}
@@ -295,17 +535,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
                     })}
                 </nav>
 
-                {/* Footer */}
-                <div className="border-t border-primary-700/50 p-4">
+                {/* ========================================================
+                    FOOTER
+                ========================================================= */}
+                <div
+                    className="
+                        shrink-0
+                        border-t
+                        border-primary-700/50
+                        p-4
+                    "
+                >
                     {isOpen ? (
-                        <div className="text-center text-xs text-primary-400">
+                        <div className="text-center text-[10px] text-primary-400">
                             <p>v1.5.3</p>
+
                             <p className="mt-1">
                                 © {new Date().getFullYear()} SDS-RH
                             </p>
                         </div>
                     ) : (
-                        <div className="text-center text-xs text-primary-500">
+                        <div className="text-center text-[10px] text-primary-500">
                             v1.5
                         </div>
                     )}

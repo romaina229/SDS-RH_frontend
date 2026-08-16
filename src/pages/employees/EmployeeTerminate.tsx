@@ -1,0 +1,112 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import Card from '../../components/common/Card';
+import Loading from '../../components/common/Loading';
+import { employees } from '../../api/employees';
+import axios from '../../api/axios';
+import toast from 'react-hot-toast';
+import type { Employee } from '../../types';
+
+const EmployeeTerminate: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
+    const [employee, setEmployee] = useState<Employee | null>(null);
+    const [type, setType] = useState('resignation');
+    const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+    const [reason, setReason] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        if (!id) return;
+        axios.get(`/employees/${id}`).then((response) => {
+            setEmployee(response.data.employee);
+        }).catch(() => {
+            toast.error('Employé introuvable');
+            navigate('/employees');
+        });
+    }, [id, navigate]);
+
+    if (!employee) return <Loading fullScreen />;
+
+    if (employee.status === 'terminated') {
+        return (
+            <div className="max-w-3xl mx-auto space-y-6">
+                <Card>
+                    <p className="text-gray-700">
+                        Cet employé est déjà sorti de l'organisation
+                        {employee.terminated_at ? ` depuis le ${new Date(employee.terminated_at).toLocaleDateString('fr-FR')}` : ''}.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/employees/exits')}
+                        className="mt-4 px-4 py-2 border rounded-md"
+                    >
+                        Retour aux sorties
+                    </button>
+                </Card>
+            </div>
+        );
+    }
+
+    const submit = async (event: React.FormEvent): Promise<void> => {
+        event.preventDefault();
+        setSaving(true);
+        try {
+            await employees.terminate(id as string, {
+                termination_type: type,
+                terminated_at: date,
+                termination_reason: reason || undefined,
+            });
+            toast.success('Sortie enregistrée avec succès');
+            navigate('/employees/exits');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Impossible d'enregistrer la sortie");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="max-w-3xl mx-auto space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">Sortie de l'employé</h1>
+                <p className="mt-1 text-gray-500">
+                    {employee.user?.first_name} {employee.user?.last_name} — {employee.employee_number}
+                </p>
+            </div>
+            <Card>
+                <form onSubmit={submit} className="space-y-5">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Type de sortie *</label>
+                        <select value={type} onChange={(e) => setType(e.target.value)} className="field" required>
+                            <option value="resignation">Démission</option>
+                            <option value="dismissal">Licenciement</option>
+                            <option value="contract_end">Fin de contrat</option>
+                            <option value="retirement">Retraite</option>
+                            <option value="death">Décès</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Date de sortie *</label>
+                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="field" required />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Motif / observations</label>
+                        <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={5} className="field" />
+                    </div>
+                    <div className="flex justify-end gap-3">
+                        <button type="button" onClick={() => navigate(-1)} className="px-4 py-2 border rounded-md">
+                            Annuler
+                        </button>
+                        <button type="submit" disabled={saving} className="px-4 py-2 rounded-md bg-primary-600 text-white disabled:opacity-50">
+                            {saving ? 'Enregistrement...' : 'Enregistrer la sortie'}
+                        </button>
+                    </div>
+                </form>
+            </Card>
+        </div>
+    );
+};
+
+export default EmployeeTerminate;

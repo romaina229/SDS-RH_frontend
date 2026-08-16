@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import type { Document } from '../../types';
 import toast from 'react-hot-toast';
 import axios from '../../api/axios';
+import { downloadBlobResponse } from '../../utils/downloadFile';
 import {
     PlusIcon,
     DocumentIcon,
@@ -89,18 +90,12 @@ const Documents: React.FC = () => {
         }
     };
 
-    const handleDownload = async (id: number): Promise<void> => {
+    const handleDownload = async (doc: Document): Promise<void> => {
         try {
-            const response = await axios.get(`/documents/${id}/download`, {
+            const response = await axios.get(`/documents/${doc.id}/download`, {
                 responseType: 'blob',
             });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = response.headers['content-disposition']?.split('filename=')[1] || 'document';
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            downloadBlobResponse(response, doc.file_name || doc.name);
         } catch (error) {
             toast.error('Erreur lors du téléchargement');
         }
@@ -239,7 +234,7 @@ const Documents: React.FC = () => {
                             </div>
                             <div className="flex space-x-2">
                                 <button
-                                    onClick={() => handleDownload(doc.id)}
+                                    onClick={() => handleDownload(doc)}
                                     className="p-1 text-blue-600 hover:text-blue-900"
                                 >
                                     <DownloadIcon className="h-4 w-4" />
