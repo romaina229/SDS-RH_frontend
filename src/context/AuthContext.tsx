@@ -14,6 +14,7 @@ interface AuthContextType {
     logout: () => Promise<void>;
     hasPermission: (permission: string) => boolean;
     hasRole: (role: string) => boolean;
+    updateTenant: (patch: Partial<Tenant>) => void;
     isAdmin: boolean;
     isManager: boolean;
     isEmployee: boolean;
@@ -143,6 +144,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return roles.includes('super_admin') || roles.includes(role);
     };
 
+    const updateTenant = (patch: Partial<Tenant>): void => {
+        setTenant((prev) => (prev ? { ...prev, ...patch } : prev));
+    };
+
     const value: AuthContextType = {
         user,
         tenant,
@@ -154,6 +159,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         logout,
         hasPermission,
         hasRole,
+        updateTenant,
         isAdmin: roles.includes('admin_org') || roles.includes('super_admin'),
         isManager: roles.includes('manager'),
         isEmployee: roles.includes('employee'),

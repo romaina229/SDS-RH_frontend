@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import axios from '../../api/axios';
 
 const Settings: React.FC = () => {
-    const { tenant } = useAuth();
+    const { tenant, updateTenant } = useAuth();
     const [loading, setLoading] = useState<boolean>(false);
     const [uploadingLogo, setUploadingLogo] = useState<boolean>(false);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -42,7 +42,7 @@ const Settings: React.FC = () => {
                 company_ifu: tenant.ifu || '',
                 company_rccm: tenant.rccm || '',
             }));
-            setLogoPreview(tenant.logo || null);
+            setLogoPreview(tenant.logo_url || null);
         }
     }, [tenant]);
 
@@ -93,10 +93,11 @@ const Settings: React.FC = () => {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             setLogoPreview(response.data.logo_url);
+            updateTenant({ logo_url: response.data.logo_url });
             toast.success('Logo mis à jour avec succès');
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Erreur lors du téléchargement du logo');
-            setLogoPreview(tenant?.logo || null);
+            setLogoPreview(tenant?.logo_url || null);
         } finally {
             setUploadingLogo(false);
         }

@@ -8,6 +8,7 @@ export interface Tenant {
   website?: string;
   address?: string;
   logo?: string;
+  logo_url?: string | null;
   ifu?: string;
   rccm?: string;
   subscription_plan: string;

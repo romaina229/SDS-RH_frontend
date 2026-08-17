@@ -232,9 +232,9 @@ const OrganizationBanner: React.FC = () => {
                                     bg-white
                                 "
                             >
-                                {tenant.logo ? (
+                                {tenant.logo_url ? (
                                     <img
-                                        src={tenant.logo}
+                                        src={tenant.logo_url}
                                         alt={tenant.name}
                                         className="
                                             h-full
